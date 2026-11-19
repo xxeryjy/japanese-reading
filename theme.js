@@ -6,18 +6,15 @@
 (function () {
   var KEY = 'jr_theme';
   var root = document.documentElement;
-  var btn = null;
 
   function current() { return root.getAttribute('data-theme') === 'wabi' ? 'wabi' : 'washi'; }
 
   function syncUI(theme) {
     var isWabi = theme === 'wabi';
-    if (btn) {
-      btn.textContent = isWabi ? '和' : '侘';
-      btn.setAttribute('aria-label', isWabi ? '切换到和风风格' : '切换到侘寂风格');
-      btn.setAttribute('title', isWabi ? '切换到和风风格' : '切换到侘寂风格');
-      btn.setAttribute('aria-pressed', isWabi ? 'true' : 'false');
-    }
+    var opts = document.querySelectorAll('[data-theme-opt]');
+    Array.prototype.forEach.call(opts, function (o) {
+      o.setAttribute('aria-pressed', o.getAttribute('data-theme-opt') === theme ? 'true' : 'false');
+    });
     /* 状态栏 / 浏览器主题色跟随：和风用品牌色，侘寂用纸色 */
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
@@ -34,33 +31,10 @@
   }
 
   function mount() {
-    if (document.getElementById('themeSwitch')) return;
-
-    var style = document.createElement('style');
-    style.textContent =
-      '.theme-switch{position:fixed;left:0;top:46%;transform:translateY(-50%);z-index:80;' +
-      'width:22px;height:54px;margin:0;padding:0;cursor:pointer;' +
-      'border:1px solid var(--line-control);border-left:0;' +
-      'border-top-right-radius:var(--r-tag);border-bottom-right-radius:var(--r-tag);' +
-      'border-top-left-radius:var(--r-tag);border-bottom-left-radius:var(--r-tag);' +
-      'background:var(--card);color:var(--ink);' +
-      'font-family:var(--font-ja);font-size:14px;line-height:1;opacity:.94;' +
-      '-webkit-tap-highlight-color:transparent;}' +
-      '.theme-switch:active{background:var(--inset);}' +
-      '.theme-switch:focus-visible{outline:2px solid var(--ink);outline-offset:-3px;}' +
-      '@media (max-width:360px){.theme-switch{width:22px;height:52px;font-size:13px;}}';
-    document.head.appendChild(style);
-
-    btn = document.createElement('button');
-    btn.id = 'themeSwitch';
-    btn.type = 'button';
-    btn.className = 'theme-switch';
-    document.body.appendChild(btn);
-
-    btn.addEventListener('click', function () {
-      apply(current() === 'wabi' ? 'washi' : 'wabi');
+    var opts = document.querySelectorAll('[data-theme-opt]');
+    Array.prototype.forEach.call(opts, function (o) {
+      o.addEventListener('click', function () { apply(o.getAttribute('data-theme-opt')); });
     });
-
     syncUI(current());
   }
 

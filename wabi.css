@@ -55,6 +55,7 @@ html[data-theme="wabi"] .pg-home .t-big b{
   font-family:var(--font-ja);font-size:62px;font-weight:400;line-height:.95;
   color:var(--ink);letter-spacing:-.02em;
 }
+html[data-theme="wabi"] .pg-home .t-big b.is-empty{font-size:32px;line-height:1.5;color:var(--text-muted);}
 html[data-theme="wabi"] .pg-home .t-big span{
   font-size:12px;font-weight:400;color:var(--text-soft);padding-bottom:8px;letter-spacing:.06em;
 }
@@ -162,7 +163,7 @@ html[data-theme="wabi"] .pg-article #text[data-writing="v"] .snd{display:none !i
 
 /* 切换按钮：只在侘寂 + 有工具行的页面出现 */
 #btnVertical{display:none;}
-html[data-theme="wabi"] .pg-article #btnVertical{display:inline-flex;}
+html[data-theme="wabi"] .pg-article #btnVertical{display:inline-flex;margin-left:14px;}
 html[data-theme="wabi"] .pg-article #btnVertical.on{
   background:var(--ink);border-color:var(--ink);color:var(--on-fill);
 }
@@ -204,3 +205,67 @@ html[data-theme="wabi"] .pg-article.writing-v #text[data-writing="v"] .jp{height
 /* 竖排列滚动条压细，避免打断纸感 */
 html[data-theme="wabi"] .pg-article #text[data-writing="v"] #article::-webkit-scrollbar{height:3px;}
 html[data-theme="wabi"] .pg-article #text[data-writing="v"] #article::-webkit-scrollbar-thumb{background:var(--line-strong);}
+
+/* ============================================================
+   ⑤ 课文页：少方框、多文字（回应"方形按钮太多"）
+   原则：一屏最多留一个实心块（篇号印章），其余一律退成文字
+   ============================================================ */
+/* 工具行：文字按钮，无描边无底色 */
+html[data-theme="wabi"] .pg-article .toolbar{gap:0;align-items:baseline;}
+html[data-theme="wabi"] .pg-article .tbtn{
+  min-height:0;padding:6px 0;margin:0 12px 0 0;
+  border:0;background:none;border-radius:0;
+  font-size:11px;font-weight:400;letter-spacing:.1em;color:var(--text-soft);
+}
+html[data-theme="wabi"] .pg-article .tbtn:active{background:none;color:var(--ink);}
+html[data-theme="wabi"] .pg-article .tbtn.on{background:none;color:var(--ink);border-bottom:1px solid var(--ink);}
+html[data-theme="wabi"] .pg-article .toolbar .jpv-entry{
+  padding:6px 0;margin:0;border:0;background:none;border-radius:0;
+  font-size:11px;font-weight:400;letter-spacing:.1em;color:var(--text-soft);
+}
+
+/* 顶部标签：去掉方框 */
+html[data-theme="wabi"] .pg-article header.cover .tag{
+  padding:0;border:0;background:none;color:var(--text-muted);
+  font-size:11px;letter-spacing:.06em;
+}
+html[data-theme="wabi"] .pg-article header.cover .tag + .tag::before{
+  content:"·";margin-right:8px;color:var(--line-strong);
+}
+
+/* 返回：只留箭头 */
+html[data-theme="wabi"] .pg-article .tabbar .back{border:0;background:none;border-radius:0;font-size:18px;}
+
+/* 逐句「译」：小号下划线文字 */
+html[data-theme="wabi"] .pg-article .zh-toggle{min-width:0;min-height:0;margin:0 0 0 6px;padding:0;}
+html[data-theme="wabi"] .pg-article .zh-toggle .chip{
+  width:auto;height:auto;border:0;background:none;border-radius:0;
+  font-size:11px;font-weight:400;color:var(--text-muted);line-height:1;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;
+}
+html[data-theme="wabi"] .pg-article .zh-toggle[aria-expanded="true"] .chip{color:var(--ink);}
+
+/* 朗读：保留 44 热区，但不再画框 */
+html[data-theme="wabi"] .pg-article .snd{
+  border:0;background:none;border-radius:0;align-self:start;margin-top:-7px;
+}
+html[data-theme="wabi"] .pg-article .snd svg{width:17px;height:17px;fill:var(--text-muted);}
+html[data-theme="wabi"] .pg-article .snd:active{background:none;}
+html[data-theme="wabi"] .pg-article .snd:active svg{fill:var(--ink);}
+
+/* 序号：与首行基线对齐（原先 padding-top:9px 是按无衬线算的，宋体偏高） */
+html[data-theme="wabi"] .pg-article .sn{padding-top:3px;line-height:1.7;font-size:11px;}
+
+/* 文末 CTA：拆掉外框，只留一条发丝线 + 一个实心动作 */
+html[data-theme="wabi"] .pg-article .cta{
+  border:0;background:none;border-radius:0;
+  border-top:1px solid var(--line);
+  margin-top:22px;padding:18px 0 0;
+  flex-direction:column;align-items:stretch;gap:12px;
+}
+html[data-theme="wabi"] .pg-article .cta-body{flex:none;}
+html[data-theme="wabi"] .pg-article .cta-t{font-weight:400;font-size:14px;letter-spacing:.16em;}
+html[data-theme="wabi"] .pg-article .cta-s{margin-top:4px;font-size:11px;color:var(--text-muted);letter-spacing:.04em;line-height:1.8;}
+html[data-theme="wabi"] .pg-article .cta-btn{
+  border-radius:0;text-align:center;font-size:14px;font-weight:400;letter-spacing:.2em;
+}
