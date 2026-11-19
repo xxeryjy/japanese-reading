@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1f6b63">
+<meta name="theme-color" content="#1e3a5f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<title>五篇阅读｜日语初级阅读</title>
+<title>阅读目录｜日语初级阅读</title>
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="wabi.css">
+<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
 <style>
 /* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
    篇色只出现在印章一处（R5 位置①）；卡片一律 1px --line + 留白分层，无投影（R6）。 */
@@ -70,53 +72,35 @@ header{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4);}
 }
 </style>
 </head>
-<body>
+<body class="pg-catalog">
 <div class="wrap">
   <header>
     <a class="back" href="index.html">← 首页</a>
-    <div class="title">五篇阅读</div>
+    <div class="title" id="pageTitle">阅读目录</div>
   </header>
   <p class="hint">按顺序读最顺；每篇都配假名注音、逐句中译和单句朗读。</p>
 
-  <a class="card" href="vending-machines.html" data-piece="a1">
-    <div class="stamp-row"><span class="stamp">01</span><span class="cat">生活</span></div>
-    <div class="t-ja" lang="ja">日本の自動販売機</div>
-    <div class="t-zh" lang="zh-CN">日本的自动售货机</div>
-    <p class="desc">四百万台、每 31 人一台。冬天卖热饮，红按钮是热的、蓝按钮是冷的——为什么日本到处都是售货机？</p>
-    <div class="tags"><span>13 句</span><span>数量词・あります</span><span>约 3 分钟</span></div>
-  </a>
-
-  <a class="card" href="new-year.html" data-piece="a2">
-    <div class="stamp-row"><span class="stamp">02</span><span class="cat">文化</span></div>
-    <div class="t-ja" lang="ja">日本のお正月</div>
-    <div class="t-zh" lang="zh-CN">日本的新年</div>
-    <p class="desc">1 月 1 日到 3 日，整个国家停下来。年菜每道都有寓意，明治神宫三天涌进三百万人。</p>
-    <div class="tags"><span>15 句</span><span>から〜まで・も〜も</span><span>约 3 分钟</span></div>
-  </a>
-
-  <a class="card" href="onsen.html" data-piece="a3">
-    <div class="stamp-row"><span class="stamp">03</span><span class="cat">文化</span></div>
-    <div class="t-ja" lang="ja">日本の温泉</div>
-    <div class="t-zh" lang="zh-CN">日本的温泉</div>
-    <p class="desc">先洗身、毛巾不能进水、不穿泳衣。冬天最实用的一套温泉礼仪，用初级语法讲清楚。</p>
-    <div class="tags"><span>15 句</span><span>〜てはいけません</span><span>约 3 分钟</span></div>
-  </a>
-
-  <a class="card" href="konbini.html" data-piece="a4">
-    <div class="stamp-row"><span class="stamp">04</span><span class="cat">生活</span></div>
-    <div class="t-ja" lang="ja">日本のコンビニ</div>
-    <div class="t-zh" lang="zh-CN">日本的便利店</div>
-    <p class="desc">全国约 5 万 6 千家。能取钱、复印、寄快递、买票——深夜也开着，是日本生活的万能插座。</p>
-    <div class="tags"><span>15 句</span><span>あります・も・や</span><span>约 3 分钟</span></div>
-  </a>
-
-  <a class="card" href="train.html" data-piece="a5">
-    <div class="stamp-row"><span class="stamp">05</span><span class="cat">生活</span></div>
-    <div class="t-ja" lang="ja">電車のマナー</div>
-    <div class="t-zh" lang="zh-CN">电车的礼仪</div>
-    <p class="desc">手机静音、不大声说话、优先席让座、行李不堵门——把官方礼仪写成 15 句初级日语。</p>
-    <div class="tags"><span>15 句</span><span>〜てはいけません</span><span>约 3 分钟</span></div>
-  </a>
+  <div id="cards"></div>
 </div>
+<script src="content.js"></script>
+<script>
+/* 阅读目录：卡片全部由 content.js 派生。加文章时只需在 content.js 的 articles 加一条，这里自动多一张卡。 */
+(function(){
+  const A = window.APP_DATA.articles;
+  document.getElementById('pageTitle').textContent = A.length + ' 篇阅读';
+  document.title = A.length + ' 篇阅读｜日语初级阅读';
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  document.getElementById('cards').innerHTML = A.map(function(a){
+    return '<a class="card" href="'+esc(a.file)+'" data-piece="'+esc(a.id)+'">'+
+      '<div class="stamp-row"><span class="stamp">'+esc(a.no)+'</span><span class="cat">'+esc(a.cat)+'</span></div>'+
+      '<div class="t-ja" lang="ja">'+esc(a.ja)+'</div>'+
+      '<div class="t-zh" lang="zh-CN">'+esc(a.zh)+'</div>'+
+      '<p class="desc">'+esc(a.desc)+'</p>'+
+      '<div class="tags"><span>'+a.sentCount+' 句</span><span>'+esc(a.grammarTag)+'</span><span>约 3 分钟</span></div>'+
+    '</a>';
+  }).join('');
+})();
+</script>
+<script src="theme.js"></script>
 </body>
 </html>

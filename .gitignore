@@ -2,4 +2,7 @@
 .DS_Store
 Thumbs.db
 _*.png
+_shots/
+_cdpprof*/
 backups/
+_ardot_call.js

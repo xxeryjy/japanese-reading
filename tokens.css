@@ -1,63 +1,69 @@
-/* 依据 DESIGN-SPEC-japanese-reading.md v1.4 —— 规格升版时必须同步改这一行 */
-/* tokens.css 是全站唯一的色 / 字 / 间距真源：改颜色、字体、间距只改这个文件，页面里不得再出现第二份 :root 基础色。
+/* 依据 DESIGN.md v2.0「和风 · 藏青朱红」（2026-11-19 换肤；对比度/ΔE 实测见 DESIGN.md §10）。
+   tokens.css 是全站唯一的色 / 字 / 间距真源：改颜色、字体、间距只改这个文件，页面里不得再出现第二份 :root 基础色。
    全站唯一允许出现字面色值的地方就是本文件；例外只有两处，都是规范强制要求写字面量的：
-   ① manifest.webmanifest ② 各页 <meta name="theme-color" content="#1f6b63">。除此之外 grep 必须归零。 */
+   ① manifest.webmanifest ② 各页 <meta name="theme-color" content="#1e3a5f">。除此之外 grep 必须归零。 */
 
 :root{
   color-scheme: light;
 
-  /* ===== 品牌（R1：每屏只有 1 个实底主行动）===== */
-  --brand:#1f6b63;
-  --brand-hover:#1b6157;       /* 桌面 hover */
-  --brand-press:#1a5a53;       /* 按下 */
-  --brand-tint:#e9f2f0;        /* 品牌浅底：计数 chip / 浅底强调，不得当篇色用 */
+  /* ===== 品牌（R1：每屏只有 1 个实底主行动）—— 藏青/藍 ===== */
+  --brand:#1e3a5f;
+  --brand-hover:#193252;       /* 桌面 hover */
+  --brand-press:#152a45;       /* 按下 */
+  --brand-tint:#e9eef4;        /* 品牌浅底：计数 chip / 浅底强调，不得当篇色用 */
   --on-fill:#ffffff;           /* 全站唯一的白，只用在实底上的文字 / 图标 */
 
-  /* ===== 状态 ok ===== */
-  --ok:#2f6b46;
-  --ok-tint:#eff6f1;
-  --ok-hover:#e5f1e8;          /* 浅底按下 / hover 时加深一档 */
+  /* ===== 状态 ok —— 若竹绿 ===== */
+  --ok:#2e6b46;
+  --ok-tint:#ebf3ee;
+  --ok-hover:#e5f0e8;          /* 浅底按下 / hover 时加深一档 */
 
-  /* ===== 状态 no（R2：只做文字与描边，永不做实底）===== */
-  --no:#9e2f1b;
-  --no-tint:#fbeeea;
-  --no-hover:#f7e2dc;
+  /* ===== 状态 no（R2：只做文字与描边，永不做实底）—— 朱红 ===== */
+  --no:#b2301c;
+  --no-tint:#f9ebe7;
+  --no-hover:#f5ddd7;
 
-  /* ===== 到期 due：今天该处理，和「出错」的 no 区分开 ===== */
-  --due:#8a6316;
-  --due-tint:#fbf3e0;
+  /* ===== 到期 due：今天该处理，和「出错」的 no 区分开 —— 山吹金 ===== */
+  --due:#856017;
+  --due-tint:#faf1dc;
 
-  /* ===== 文字三级 ===== */
-  --ink:#241f1a;
-  --text-soft:#5f594e;
-  --text-muted:#756d61;        /* 不得压在 --inset / 任何 tint 底上（4.40 < 4.5） */
+  /* ===== 文字三级 —— 墨 ===== */
+  --ink:#26221c;
+  --text-soft:#5c5549;
+  --text-muted:#6f6758;        /* 不得压在 --inset / 任何 tint 底上（4.62，边缘，慎用） */
 
-  /* ===== 面 ===== */
-  --paper:#f7f5ef;
-  --card:#fffefb;
-  --inset:#f2eee4;
-  --fill:#faf8f2;              /* 次级面：原位展开的面板 / 浮层内底 */
-  --mark:#fbecc0;              /* 高亮标记底（原值 #f6f1e3 与纸底 ΔE 仅 7.3，看不见） */
+  /* ===== 面 —— 和纸 ===== */
+  --paper:#f5f0e6;
+  --card:#fffdf7;
+  --inset:#efe9dc;
+  --fill:#faf6ec;              /* 次级面：原位展开的面板 / 浮层内底 */
+  --mark:#f6e3a8;              /* 高亮标记底 */
 
   /* ===== 线：只有三级 ===== */
-  --line:#e6ded0;              /* 1px 分隔线，装饰 */
-  --line-strong:#d5cbb9;       /* 更强的装饰分隔线 */
-  --line-control:#998762;      /* 控件边界（四个表面 3.02–3.47，满足 WCAG 1.4.11） */
+  --line:#dcd3c2;              /* 1px 分隔线，装饰 */
+  --line-strong:#c9bda6;       /* 更强的装饰分隔线 */
+  --line-control:#8c7c62;      /* 控件边界（四表面 3.35–3.99，满足 WCAG 1.4.11） */
 
   /* ===== 投影：只有 2 类合法用途（R6，按 z 轴位移判定）===== */
-  --shadow-overlay:0 18px 48px rgba(60,45,20,.16);   /* ① 覆盖层 / 浮层 */
-  --shadow-flip:0 6px 20px rgba(60,45,20,.08);       /* ② 翻转词卡 */
+  --shadow-overlay:0 18px 48px rgba(38,34,28,.16);   /* ① 覆盖层 / 浮层 */
+  --shadow-flip:0 6px 20px rgba(38,34,28,.08);       /* ② 翻转词卡 */
   --shadow-card:var(--shadow-flip);                  /* 别名：仅翻转词卡 .face 使用，普通卡片一律无投影 */
-  --scrim:rgba(36,31,26,.28);                        /* 浮层遮罩，与 --shadow-overlay 配对 */
+  --scrim:rgba(38,34,28,.28);                        /* 浮层遮罩，与 --shadow-overlay 配对 */
 
-  /* ===== 篇色（R5：只有 4 个合法位置）===== */
-  --piece-a1:#2d6459; --piece-a1-tint:#ecf9f6;   /* 生活 01 自販機 */
-  --piece-a2:#89483d; --piece-a2-tint:#f9edec;   /* 文化 02 お正月 */
-  --piece-a3:#6f5632; --piece-a3-tint:#f9f3ec;   /* 文化 03 温泉 */
-  --piece-a4:#3a5d80; --piece-a4-tint:#ecf2f9;   /* 生活 04 コンビニ */
-  --piece-a5:#46622c; --piece-a5-tint:#f2f9ec;   /* 生活 05 電車 */
+  /* ===== 篇色（R5：只有 4 个合法位置）—— 日本传统色 ===== */
+  --piece-a1:#2c5d7c; --piece-a1-tint:#e9f1f5;   /* 生活 01 自販機 · 藍 */
+  --piece-a2:#a53a2a; --piece-a2-tint:#f8ece8;   /* 文化 02 お正月 · 朱（えび茶） */
+  --piece-a3:#7a5c33; --piece-a3-tint:#f4efe6;   /* 文化 03 温泉 · 茶 */
+  --piece-a4:#6b5b8a; --piece-a4-tint:#efecf4;   /* 生活 04 コンビニ · 藤 */
+  --piece-a5:#5c6b2f; --piece-a5-tint:#eff2e6;   /* 生活 05 電車 · 若竹 */
+  /* 预留篇色 a6–a10：加新文章直接用 data-piece="a6"，无需改本文件（白字对比 5.6–7.1，全达标） */
+  --piece-a6:#6d4a7a; --piece-a6-tint:#f1ebf4;   /* 紫紺 */
+  --piece-a7:#2c6b70; --piece-a7-tint:#e7f2f2;   /* 青磁 */
+  --piece-a8:#8a5a2b; --piece-a8-tint:#f6eee3;   /* 琥珀 */
+  --piece-a9:#7a2f4a; --piece-a9-tint:#f6e9ee;   /* 紅梅 */
+  --piece-a10:#4a5a6b; --piece-a10-tint:#ecf0f4;  /* 鉄 */
 
-  /* 篇色默认值：漏挂 data-piece 时必须 fail-loud（灰印章白字 5.10 可读，但一眼看出没配对），不得回落品牌绿 */
+  /* 篇色默认值：漏挂 data-piece 时必须 fail-loud（灰印章白字可读，但一眼看出没配对），不得回落品牌绿 */
   --piece:var(--text-muted);
   --piece-tint:var(--inset);
 
@@ -67,7 +73,7 @@
   --r-ctl:10px;
   --r-tag:6px;
 
-  /* ===== 间距：编号 = 4 × N（s1=4 … s14=56），只保留实际在用的档，避免 var(--s10) 拿到 56 这类错位 ===== */
+  /* ===== 间距：编号 = 4 × N（s1=4 … s14=56）===== */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
   --s8:32px; --s10:40px; --s14:56px;
 
@@ -82,3 +88,72 @@
 [data-piece="a3"]{ --piece:var(--piece-a3); --piece-tint:var(--piece-a3-tint); }
 [data-piece="a4"]{ --piece:var(--piece-a4); --piece-tint:var(--piece-a4-tint); }
 [data-piece="a5"]{ --piece:var(--piece-a5); --piece-tint:var(--piece-a5-tint); }
+[data-piece="a6"]{ --piece:var(--piece-a6); --piece-tint:var(--piece-a6-tint); }
+[data-piece="a7"]{ --piece:var(--piece-a7); --piece-tint:var(--piece-a7-tint); }
+[data-piece="a8"]{ --piece:var(--piece-a8); --piece-tint:var(--piece-a8-tint); }
+[data-piece="a9"]{ --piece:var(--piece-a9); --piece-tint:var(--piece-a9-tint); }
+[data-piece="a10"]{ --piece:var(--piece-a10); --piece-tint:var(--piece-a10-tint); }
+
+/* =====================================================================
+   主题 B：侘寂（Wabi-sabi）—— 由 theme.js 切换，<html data-theme="wabi">
+   只覆盖 token，不改任何页面选择器。对比度已实测（见 DESIGN.md §11）。
+   要点：去掉圆角与投影、换和纸/墨/苔绿/锈色、正文改明朝体。
+   ===================================================================== */
+[data-theme="wabi"]{
+  /* 品牌：苔绿 */
+  --brand:#4A5A3F;
+  --brand-hover:#3F4D36;
+  --brand-press:#364230;
+  --brand-tint:#E7EAE1;
+  --on-fill:#ffffff;              /* 白字压苔绿 7.43，达标 */
+
+  /* 状态 */
+  --ok:#46603C;  --ok-tint:#E6EBE0;  --ok-hover:#DCE4D5;
+  --no:#8F3F28;  --no-tint:#F0E4DE;  --no-hover:#EAD8D0;
+  --due:#74553A; --due-tint:#EFE6DA;
+
+  /* 文字：墨三级 */
+  --ink:#2B2B2B;
+  --text-soft:#5A5346;
+  --text-muted:#655B4C;           /* 弱底 4.69，过线 */
+
+  /* 面：和纸 */
+  --paper:#E8E2D6;
+  --card:#F1EDE4;
+  --inset:#DFD8C9;
+  --fill:#EDE8DC;
+  --mark:#E8DCAE;
+
+  /* 线：发丝级 */
+  --line:rgba(43,43,43,.18);
+  --line-strong:rgba(43,43,43,.28);
+  --line-control:#726E66;         /* 弱底 3.58 / 纸底 3.93，满足 1.4.11 */
+
+  /* 投影：侘寂不用投影 */
+  --shadow-overlay:none;
+  --shadow-flip:none;
+  --shadow-card:none;
+  --scrim:rgba(43,43,43,.25);
+
+  /* 篇色：降饱和，融入纸感 */
+  --piece-a1:#3F4A52; --piece-a1-tint:#E3E7E8;
+  --piece-a2:#8A4A3A; --piece-a2-tint:#EFE3DE;
+  --piece-a3:#7A6448; --piece-a3-tint:#EDE6DA;
+  --piece-a4:#5F5566; --piece-a4-tint:#E9E5EA;
+  --piece-a5:#5E6B4F; --piece-a5-tint:#E7EADE;
+  --piece-a6:#6A5570; --piece-a6-tint:#EAE5EC;
+  --piece-a7:#47686B; --piece-a7-tint:#E2EAEA;
+  --piece-a8:#7E6136; --piece-a8-tint:#EDE5D8;
+  --piece-a9:#703F52; --piece-a9-tint:#ECE3E7;
+  --piece-a10:#54606B; --piece-a10-tint:#E6E9EC;
+
+  /* 圆角归零：方形、无包边 */
+  --r-pill:2px;
+  --r-card:0px;
+  --r-ctl:0px;
+  --r-tag:0px;
+
+  /* 字体：正文与标题改明朝体 / 宋体 */
+  --font-ja:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Songti SC",serif;
+  --font-zh:"Songti SC","Noto Serif SC","Source Han Serif SC",-apple-system,serif;
+}

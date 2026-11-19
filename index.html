@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1f6b63">
+<meta name="theme-color" content="#1e3a5f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <title>日语初级阅读</title>
 <link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="wabi.css">
+<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
 <style>
 /* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
    R1 本页唯一 --brand 实底 = 今日卡里的「开始今日复习」。R6 本页无投影（卡片一律 1px --line + 留白分层）。 */
@@ -83,12 +85,12 @@ footer{margin-top:var(--s6);font-size:12px;color:var(--text-soft);line-height:1.
 }
 </style>
 </head>
-<body>
+<body class="pg-home">
 <div class="wrap">
   <header>
     <div class="kicker">初级日语 · 生活与文化</div>
     <h1>日语初级阅读</h1>
-    <p class="sub">73 句 · 75 个词 · 全假名注音</p>
+    <p class="sub" id="subCount">全假名注音</p>
   </header>
 
   <section class="today">
@@ -105,7 +107,7 @@ footer{margin-top:var(--s6);font-size:12px;color:var(--text-soft);line-height:1.
   <a class="entry" href="reading.html">
     <div class="e-body">
       <div class="e-t">阅读</div>
-      <div class="e-s">5 篇 · 73 句</div>
+      <div class="e-s" id="entrySub">开始读</div>
     </div>
     <span class="chev" aria-hidden="true">›</span>
   </a>
@@ -120,19 +122,13 @@ if(!window.WorkBuddyCloud){
   document.head.appendChild(_s);
 }
 </script>
+<script src="content.js"></script>
 <script src="cloud.js"></script>
 <script>
 /* 今日数口径 —— 必须与 review.html 完全一致：
    到期 = 学过的词里 s<3 且 due<=now；新词（n 为 0 / 无记录）不计入到期，单独算「还没开始」。
-   分母固定 75。这条修掉了旧版「今日待复习 75 / 还没开始 75」的双计数矛盾。
-   WORDS75 是 review.html 里 WORDS 的 ja 键，词表变动时两处同步（后续可抽 words.js）。 */
-const WORDS75 = [
-  '自動販売機','約','〜台','世界','多い','〜の一つ','だけではありません','売っています','あたたかい','ラベル','安全（な）','安心（な）','便利（な）','寒い',
-  '〜たいです','お正月','大切（な）','休み','年賀状','送ります','一緒に','おせち料理','意味','黒豆','数の子','神社','初詣','健康','お願いします','お年玉',
-  '温泉','火山','お湯','気持ちがいい','ルール','体を洗う','タオル','水着','髪を上げる','露天風呂','旅館','体にいい','特に','いつか','入ってはいけません',
-  'コンビニ','〜店','夜','食べ物','飲み物','お弁当','おにぎり','おでん','温めます','レジ','自分で','コピー機','宅配便','傘','持って帰ります','電車',
-  'ホーム','順番に','並びます','携帯電話','マナーモード','車内','優先席','お年寄り','ゆずります','女性専用車','かけ込み乗車','荷物','ごみ箱','正確（な）'
-];
+   词表、分母、篇数、句数全部来自 content.js（全站唯一内容真源），不再手抄。 */
+const WORDS75 = APP_DATA.words.map(w => w.ja);
 
 (function(){
   const KEY = 'jp_srs_v2';
@@ -145,6 +141,12 @@ const WORDS75 = [
   try{ S = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){ S = {}; }
 
   const TOTAL = WORDS75.length;
+  // 页头副行 / 阅读入口：句数、篇数从 content.js 派生
+  const SENT_TOTAL = APP_DATA.articles.reduce((n,a) => n + a.sentCount, 0);
+  const ARTICLE_N = APP_DATA.articles.length;
+  $('subCount').textContent = SENT_TOTAL + ' 句 · ' + TOTAL + ' 个词 · 全假名注音';
+  $('entrySub').textContent = ARTICLE_N + ' 篇 · ' + SENT_TOTAL + ' 句';
+
   let due = 0, fresh = 0, mastered = 0;
   WORDS75.forEach(k => {
     const r = S[k];
@@ -189,5 +191,6 @@ if('serviceWorker' in navigator && location.protocol === 'https:'){
   });
 }
 </script>
+<script src="theme.js"></script>
 </body>
 </html>
