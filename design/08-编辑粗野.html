@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>08 编辑粗野 · 大胆版式</title>
+<style>
+:root{
+  --black:#111111; --white:#FFFFFF; --red:#E23B2E; --paper:#F4F2ED; --gray:#C9C9C9;
+  --sans:-apple-system,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  --gothic:"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#CFCCC4;font-family:var(--sans);-webkit-font-smoothing:antialiased;padding:52px 60px;}
+
+.board-title{max-width:1740px;margin:0 auto 34px;display:flex;align-items:flex-end;gap:16px;}
+.board-title h1{font-size:34px;font-weight:800;color:#111;letter-spacing:-.03em;}
+.board-title .meta{font-size:12.5px;color:#575757;padding-bottom:5px;line-height:1.6;}
+.board-title .badge{margin-left:auto;background:#111;color:#fff;font-size:11px;font-weight:800;
+  padding:9px 14px;letter-spacing:.22em;}
+
+.frames{display:flex;gap:40px;align-items:flex-start;max-width:1740px;margin:0 auto;}
+.frame{flex:none;width:375px;}
+.flabel{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.flabel .no{font-size:11.5px;font-weight:800;color:#fff;background:#111;padding:2px 7px;}
+.flabel .nm{font-size:13px;font-weight:800;color:#111;letter-spacing:.02em;}
+.flabel .en{font-size:10px;color:#7a7a7a;letter-spacing:.2em;font-weight:700;}
+
+.phone{width:375px;height:760px;background:var(--paper);border:3px solid var(--black);overflow:hidden;position:relative;}
+
+/* 通用 */
+.bar{background:var(--black);color:#fff;display:flex;align-items:center;justify-content:space-between;
+  padding:6px 14px;font-size:9.5px;font-weight:800;letter-spacing:.22em;}
+.hr4{height:5px;background:var(--black);}
+.hr2{height:2px;background:var(--black);}
+.kr{font-size:9.5px;font-weight:800;letter-spacing:.26em;color:var(--red);}
+
+/* ---------- 首页 ---------- */
+.mast{padding:14px 18px 0;}
+.mast .kick{display:flex;justify-content:space-between;align-items:baseline;}
+.mast .kick .l{font-size:9.5px;font-weight:800;letter-spacing:.24em;color:#111;}
+.mast .kick .r{font-size:9.5px;font-weight:800;letter-spacing:.18em;color:#8a8a8a;}
+.mast h1{margin-top:10px;font-size:41px;font-weight:800;line-height:.98;color:#111;letter-spacing:-.05em;}
+.mast h1 .ind{display:block;padding-left:52px;}
+.mast .sub{margin-top:9px;font-size:9.5px;font-weight:800;letter-spacing:.2em;color:#5a5a5a;}
+.mast .hr4{margin-top:12px;}
+
+.stat{padding:16px 18px 0;}
+.stat .top{display:flex;justify-content:space-between;align-items:baseline;}
+.stat .top .l{font-size:9.5px;font-weight:800;letter-spacing:.24em;color:#111;}
+.stat .top .r{font-size:9.5px;font-weight:800;letter-spacing:.14em;color:#8a8a8a;}
+.stat .row{display:flex;align-items:flex-end;gap:10px;margin-top:6px;position:relative;z-index:2;}
+.stat .n{font-family:var(--gothic);font-size:80px;font-weight:800;line-height:1;color:#111;letter-spacing:-.06em;}
+.stat .lbl{font-size:11px;font-weight:800;color:#111;line-height:1.35;padding-bottom:6px;}
+.stat .lbl em{font-style:normal;background:var(--red);color:#fff;padding:1px 4px;}
+.stat .desc{margin-top:8px;font-size:10px;font-weight:600;color:#5a5a5a;line-height:1.6;letter-spacing:.02em;}
+.pb{margin-top:10px;height:14px;border:3px solid #111;background:#fff;}
+.pb i{display:block;height:100%;background:var(--black);}
+
+.cta{margin:14px 0 0;height:60px;background:var(--black);display:flex;align-items:center;justify-content:space-between;
+  padding-left:18px;}
+.cta .t{color:#fff;font-size:16px;font-weight:800;letter-spacing:.16em;}
+.cta .a{width:56px;height:60px;background:var(--red);display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:22px;font-weight:800;}
+
+.idxrow{margin:12px 18px 0;display:flex;align-items:center;justify-content:space-between;
+  border-top:5px solid #111;border-bottom:2px solid #111;padding:9px 0;}
+.idxrow .l{font-size:12px;font-weight:800;letter-spacing:.1em;color:#111;}
+.idxrow .r{font-size:9.5px;font-weight:800;letter-spacing:.16em;color:#8a8a8a;}
+.bottom{margin:10px 18px 0;font-size:9px;font-weight:800;letter-spacing:.2em;color:#9a9a9a;}
+
+/* ---------- 目录：INDEX ---------- */
+.ihd{padding:14px 18px 0;}
+.ihd .row{display:flex;align-items:baseline;justify-content:space-between;}
+.ihd .t{font-size:26px;font-weight:800;letter-spacing:-.04em;color:#111;}
+.ihd .n{font-size:9.5px;font-weight:800;letter-spacing:.2em;color:#8a8a8a;}
+.ihd .hr4{margin-top:8px;}
+
+.items{padding:0 18px;}
+.it{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:2px solid #111;}
+.it .num{font-family:var(--gothic);font-size:30px;font-weight:800;color:#111;line-height:.85;letter-spacing:-.05em;width:44px;flex:none;}
+.it .mid2{flex:1;min-width:0;padding-top:2px;}
+.it .ja{font-family:var(--gothic);font-size:16px;font-weight:800;color:#111;line-height:1.25;letter-spacing:-.01em;}
+.it .zh{font-size:9.5px;font-weight:700;color:#6a6a6a;margin-top:3px;letter-spacing:.04em;}
+.it .len{font-size:9.5px;font-weight:800;color:#8a8a8a;letter-spacing:.1em;padding-top:4px;}
+.it.hot .num{color:var(--red);}
+.it.hot{background:var(--red);}
+.it.hot .ja,.it.hot .len{color:#fff;}
+.it.hot .zh{color:rgba(255,255,255,.85);}
+.it.hot{margin:0 -18px;padding-left:18px;padding-right:18px;}
+
+/* ---------- 课文 ---------- */
+.ahd{padding:14px 18px 0;}
+.ahd .row{display:flex;align-items:baseline;justify-content:space-between;}
+.ahd .ja{font-family:var(--gothic);font-size:20px;font-weight:800;color:#111;letter-spacing:-.02em;}
+.ahd .n{font-size:9.5px;font-weight:800;letter-spacing:.18em;color:#8a8a8a;}
+.ahd .hr4{margin-top:8px;}
+.tabs{display:flex;border-bottom:5px solid #111;margin-top:8px;}
+.tabs .t{flex:1;text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:#9a9a9a;padding:7px 0;}
+.tabs .t.on{background:#111;color:#fff;}
+
+.slist{padding:0 18px;}
+.s{display:flex;gap:10px;padding:12px 0;border-bottom:2px solid #ddd;}
+.s .no{font-family:var(--gothic);font-size:11px;font-weight:800;color:var(--red);padding-top:6px;flex:none;width:20px;}
+.s .bd{flex:1;}
+.s .jp{font-family:var(--gothic);font-size:17px;line-height:1.85;color:#111;font-weight:500;}
+.s .jp rt{font-size:.46em;color:#7a7a7a;}
+.s .zh{margin-top:4px;font-size:10px;font-weight:800;color:#111;letter-spacing:.04em;
+  border-left:4px solid var(--red);padding-left:7px;}
+.s .snd{width:26px;height:26px;flex:none;border:2.5px solid #111;display:flex;align-items:center;justify-content:center;align-self:flex-start;}
+.s .snd svg{width:12px;height:12px;fill:#111;}
+.note{margin:0 18px;padding:10px 0 0;display:flex;justify-content:space-between;border-top:5px solid #111;}
+.note span{font-size:9px;font-weight:800;letter-spacing:.16em;color:#6a6a6a;}
+
+/* ---------- 复习 ---------- */
+.rhead{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:5px solid #111;}
+.rhead .l{font-size:10px;font-weight:800;letter-spacing:.2em;color:#111;}
+.rhead .box{background:#111;color:#fff;font-size:10px;font-weight:800;padding:3px 8px;letter-spacing:.14em;}
+
+.rbody{padding:0 18px;}
+.rlabel{display:inline-block;margin-top:14px;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;
+  padding:3px 8px;letter-spacing:.2em;}
+.rword{margin-top:10px;font-family:var(--gothic);font-size:44px;font-weight:800;color:#111;line-height:1.12;letter-spacing:-.05em;}
+.rrule{height:5px;background:#111;margin-top:12px;}
+.rkana{margin-top:10px;font-family:var(--gothic);font-size:16px;font-weight:700;color:#5a5a5a;letter-spacing:.06em;}
+.rzh{margin-top:8px;font-size:19px;font-weight:800;color:#111;letter-spacing:.02em;}
+.rhint{margin-top:14px;font-size:9px;font-weight:800;letter-spacing:.16em;color:#9a9a9a;}
+
+.racts{position:absolute;left:0;right:0;bottom:0;display:flex;border-top:5px solid #111;}
+.racts .b{flex:1;height:68px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;letter-spacing:.06em;}
+.racts .no{background:#fff;color:#111;border-right:5px solid #111;}
+.racts .ok{background:#111;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="board-title">
+  <h1>08 编辑粗野</h1>
+  <div class="meta">大胆版式：报头式巨标题 · 粗横线 · 硬网格 · 无圆角</div>
+  <div class="badge">BRUTALIST</div>
+</div>
+
+<div class="frames">
+
+  <!-- 01 首页 -->
+  <div class="frame">
+    <div class="flabel"><span class="no">01</span><span class="nm">首页</span><span class="en">HOME</span></div>
+    <div class="phone">
+      <div class="bar"><span>ISSUE 01 — N5</span><span>2026</span></div>
+      <div class="mast">
+        <div class="kick"><span class="l">日 本 語 読 解</span><span class="r">No.01</span></div>
+        <h1>日语初级<span class="ind">阅读</span></h1>
+        <div class="sub">73 句 / 75 词 / 全假名注音</div>
+        <div class="hr4"></div>
+      </div>
+
+      <div class="stat">
+        <div class="top"><span class="l">今 日 の 復 習</span><span class="r">MASTERED 23/75</span></div>
+        <div class="row"><div class="n">12</div><div class="lbl">个词<em>到期</em><br>约 2 分钟</div></div>
+        <div class="desc">每次最多 20 个 · 另有 40 个还没开始</div>
+        <div class="pb"><i style="width:31%"></i></div>
+      </div>
+
+      <div class="cta"><span class="t">开始今日复习</span><span class="a">›</span></div>
+
+      <div class="idxrow"><span class="l">阅读</span><span class="r">5 篇 · 73 句</span></div>
+      <div class="idxrow" style="border-top:2px solid #111;margin-top:8px"><span class="l">进度</span><span class="r">已掌握 23 / 75</span></div>
+      <div class="bottom">原创课文 · JNTO / JVMA 公开资料</div>
+      <div class="bottom" style="margin-top:4px">ALL KANA ANNOTATED — 全假名注音</div>
+    </div>
+  </div>
+
+  <!-- 02 目录 -->
+  <div class="frame">
+    <div class="flabel"><span class="no">02</span><span class="nm">阅读目录</span><span class="en">CATALOG</span></div>
+    <div class="phone">
+      <div class="ihd">
+        <div class="row"><span class="t">目次</span><span class="n">INDEX / 5 PIECES</span></div>
+        <div class="hr4"></div>
+      </div>
+      <div class="items">
+        <div class="it hot">
+          <span class="num">01</span>
+          <div class="mid2"><div class="ja">日本の自動販売機</div><div class="zh">日本的自动售货机 · 13 句</div></div>
+          <span class="len">13</span>
+        </div>
+        <div class="it">
+          <span class="num">02</span>
+          <div class="mid2"><div class="ja">日本のお正月</div><div class="zh">日本的新年 · 15 句</div></div>
+          <span class="len">15</span>
+        </div>
+        <div class="it">
+          <span class="num">03</span>
+          <div class="mid2"><div class="ja">日本の温泉</div><div class="zh">日本的温泉 · 15 句</div></div>
+          <span class="len">15</span>
+        </div>
+        <div class="it">
+          <span class="num">04</span>
+          <div class="mid2"><div class="ja">日本のコンビニ</div><div class="zh">日本的便利店 · 15 句</div></div>
+          <span class="len">15</span>
+        </div>
+        <div class="it">
+          <span class="num">05</span>
+          <div class="mid2"><div class="ja">電車のマナー</div><div class="zh">电车的礼仪 · 15 句</div></div>
+          <span class="len">15</span>
+        </div>
+      </div>
+      <div style="margin:14px 18px 0;border-top:5px solid #111;padding-top:9px;display:flex;justify-content:space-between;">
+        <span style="font-size:9px;font-weight:800;letter-spacing:.2em;color:#111;">TOTAL</span>
+        <span style="font-size:9px;font-weight:800;letter-spacing:.16em;color:#8a8a8a;">73 句 · 75 词</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 课文 -->
+  <div class="frame">
+    <div class="flabel"><span class="no">03</span><span class="nm">课文页</span><span class="en">ARTICLE</span></div>
+    <div class="phone">
+      <div class="ahd">
+        <div class="row"><span class="ja">日本の自動販売機</span><span class="n">第 一 篇</span></div>
+        <div class="hr4"></div>
+        <div class="tabs"><span class="t on">课文</span><span class="t">词汇</span><span class="t">语法</span><span class="t">文化</span></div>
+      </div>
+
+      <div class="slist">
+        <div class="s">
+          <span class="no">01</span>
+          <div class="bd">
+            <div class="jp"><ruby>日本<rt>にほん</rt></ruby>には、<ruby>自動販売機<rt>じどうはんばいき</rt></ruby>がたくさんあります。</div>
+            <div class="zh">日本有很多自动售货机。</div>
+          </div>
+          <span class="snd"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+        </div>
+        <div class="s">
+          <span class="no">02</span>
+          <div class="bd">
+            <div class="jp"><ruby>約<rt>やく</rt></ruby><ruby>四百<rt>よんひゃく</rt></ruby>万台あります。</div>
+            <div class="zh">约有四百万台。</div>
+          </div>
+          <span class="snd"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+        </div>
+        <div class="s">
+          <span class="no">03</span>
+          <div class="bd">
+            <div class="jp"><ruby>世界<rt>せかい</rt></ruby>でも、<ruby>特<rt>とく</rt></ruby>に<ruby>多<rt>おお</rt></ruby>い<ruby>国<rt>くに</rt></ruby>です。</div>
+            <div class="zh">在世界上也是特别多的国家。</div>
+          </div>
+          <span class="snd"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+        </div>
+        <div class="s">
+          <span class="no">04</span>
+          <div class="bd">
+            <div class="jp"><ruby>冬<rt>ふゆ</rt></ruby>は、あたたかい<ruby>飲<rt>の</rt></ruby>み<ruby>物<rt>もの</rt></ruby>もあります。</div>
+            <div class="zh">冬天也有热饮。</div>
+          </div>
+          <span class="snd"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+        </div>
+      </div>
+      <div class="note"><span>ALL KANA ANNOTATED</span><span>13 / 73</span></div>
+    </div>
+  </div>
+
+  <!-- 04 复习 -->
+  <div class="frame">
+    <div class="flabel"><span class="no">04</span><span class="nm">复习翻卡</span><span class="en">REVIEW</span></div>
+    <div class="phone">
+      <div class="rhead"><span class="l">REVIEW</span><span class="box">3 / 20</span></div>
+      <div class="rbody">
+        <span class="rlabel">生 活 01</span>
+        <div class="rword">自動販売<br>機</div>
+        <div class="rrule"></div>
+        <div class="rkana">じどうはんばいき</div>
+        <div class="rzh">自动售货机</div>
+        <div class="rhint">TAP TO FLIP · 点卡片翻面</div>
+      </div>
+      <div class="racts">
+        <div class="b no">✗ 没记住</div>
+        <div class="b ok">✓ 记住了</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

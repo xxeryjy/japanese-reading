@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>06 侘寂 · 竖排 / 横排对照</title>
+<style>
+:root{
+  --sand:#E8E2D6; --lite:#F1EDE4; --ink:#2B2B2B; --moss:#6B7D5A; --rust:#8A6A4F;
+  --hair:rgba(43,43,43,.18);
+  --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Songti SC",serif;
+  --sans:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#D3CCBE;font-family:var(--sans);-webkit-font-smoothing:antialiased;padding:52px 60px;}
+
+.board-title{max-width:1360px;margin:0 auto 30px;display:flex;align-items:flex-end;gap:16px;}
+.board-title h1{font-family:var(--serif);font-size:32px;font-weight:400;color:#2B2B2B;letter-spacing:.1em;}
+.board-title .meta{font-size:12px;color:#6b6355;padding-bottom:6px;line-height:1.7;}
+.board-title .badge{margin-left:auto;font-family:var(--serif);font-size:11.5px;color:#2B2B2B;letter-spacing:.24em;
+  border-bottom:1px solid #2B2B2B;padding-bottom:4px;}
+
+.board{max-width:1360px;margin:0 auto;display:grid;grid-template-columns:repeat(3,375px);gap:44px;}
+.col-h{font-family:var(--serif);font-size:13px;color:#2B2B2B;letter-spacing:.3em;
+  padding-bottom:7px;border-bottom:1px solid #2B2B2B;margin-bottom:16px;display:flex;justify-content:space-between;}
+.col-h span{font-size:10px;color:#8a7c66;letter-spacing:.14em;}
+
+.frame{width:375px;margin-bottom:34px;}
+.flabel{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;}
+.flabel .tag{font-family:var(--serif);font-size:10px;color:#F1EDE4;background:#6B7D5A;padding:2px 8px;letter-spacing:.18em;}
+.flabel .tag.h{background:#8A6A4F;}
+.flabel .nm{font-size:10.5px;color:#8a7c66;letter-spacing:.12em;}
+
+.phone{width:375px;height:760px;background:var(--sand);overflow:hidden;position:relative;
+  box-shadow:0 1px 0 rgba(43,43,43,.08);}
+.grain{position:absolute;inset:0;opacity:.5;pointer-events:none;
+  background-image:radial-gradient(rgba(43,43,43,.05) .5px, transparent .6px);background-size:3px 3px;}
+
+/* ============ 首页 · 竖排 ============ */
+.v-title{position:absolute;top:86px;right:44px;writing-mode:vertical-rl;font-family:var(--serif);
+  font-size:50px;font-weight:400;color:var(--ink);letter-spacing:.2em;line-height:1.18;}
+.v-kick{position:absolute;top:92px;left:38px;writing-mode:vertical-rl;font-family:var(--serif);
+  font-size:10.5px;color:#7c7263;letter-spacing:.5em;}
+.v-line{position:absolute;top:88px;bottom:180px;left:88px;width:1px;background:var(--hair);}
+.v-dot{position:absolute;top:236px;left:84px;width:9px;height:9px;border-radius:50%;background:var(--moss);}
+.v-note{position:absolute;left:38px;top:330px;font-family:var(--serif);font-size:10.5px;color:#8a7c66;
+  letter-spacing:.24em;line-height:2.1;}
+
+/* ============ 首页 · 横排 ============ */
+.hh{position:absolute;top:76px;left:38px;right:38px;}
+.hh .k{font-family:var(--serif);font-size:10.5px;color:#8a7c66;letter-spacing:.44em;}
+.hh h1{margin-top:18px;font-family:var(--serif);font-size:46px;font-weight:400;color:var(--ink);
+  letter-spacing:.14em;line-height:1.3;}
+.hh .dash{margin-top:16px;width:64px;height:1px;background:var(--ink);}
+.hh .nt{margin-top:14px;font-family:var(--serif);font-size:10.5px;color:#8a7c66;letter-spacing:.3em;line-height:2;}
+
+/* 通用底部（首页两版共用） */
+.h-rule{position:absolute;left:38px;right:38px;bottom:186px;height:1px;background:var(--hair);}
+.h-cta{position:absolute;left:38px;bottom:120px;font-family:var(--serif);font-size:19px;color:var(--ink);letter-spacing:.24em;}
+.h-cta .u{display:block;width:56px;height:1px;background:var(--ink);margin-top:9px;}
+.h-meta{position:absolute;right:38px;bottom:120px;text-align:right;font-family:var(--serif);
+  font-size:10px;color:#8a7c66;letter-spacing:.2em;line-height:2;}
+.h-num{position:absolute;left:34px;bottom:214px;font-family:var(--serif);font-size:56px;font-weight:400;
+  color:var(--ink);letter-spacing:-.02em;line-height:1;}
+.h-num span{font-size:14px;letter-spacing:.14em;margin-left:8px;color:#7c7263;}
+
+/* ============ 课文 ============ */
+.a-head{position:absolute;top:64px;left:38px;right:38px;display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:12px;border-bottom:1px solid var(--hair);}
+.a-head .t{font-family:var(--serif);font-size:17px;color:var(--ink);letter-spacing:.28em;}
+.a-head .n{font-family:var(--serif);font-size:10px;color:#8a7c66;letter-spacing:.16em;}
+
+/* 竖排 */
+.a-cols{position:absolute;top:96px;left:38px;right:38px;bottom:64px;writing-mode:vertical-rl;
+  display:flex;flex-wrap:wrap;column-gap:22px;overflow:hidden;}
+.a-s{writing-mode:vertical-rl;font-family:var(--serif);font-size:19px;line-height:2.2;color:var(--ink);
+  letter-spacing:.1em;height:520px;}
+.a-s rt{font-size:.38em;color:#8a7c66;}
+.a-s .no{font-size:10px;color:var(--rust);letter-spacing:.3em;opacity:.8;}
+.a-foot{position:absolute;left:38px;right:38px;bottom:30px;display:flex;justify-content:space-between;
+  font-family:var(--serif);font-size:10px;color:#8a7c66;letter-spacing:.2em;}
+
+/* 横排 */
+.h-list{position:absolute;top:100px;left:38px;right:38px;bottom:64px;}
+.h-s{position:relative;padding:14px 0 14px 30px;border-bottom:1px solid var(--hair);}
+.h-s:last-child{border-bottom:0;}
+.h-s .no{position:absolute;left:0;top:20px;font-family:var(--serif);font-size:10.5px;color:var(--rust);
+  letter-spacing:.2em;opacity:.85;}
+.h-s .jp{font-family:var(--serif);font-size:17.5px;line-height:1.95;color:var(--ink);letter-spacing:.06em;}
+.h-s .jp rt{font-size:.4em;color:#8a7c66;}
+.h-s .zh{margin-top:4px;font-size:10.5px;color:#8a7c66;letter-spacing:.08em;}
+
+/* ============ 复习 ============ */
+.r-top{position:absolute;top:56px;left:38px;right:38px;display:flex;align-items:center;justify-content:space-between;}
+.r-top .c{font-family:var(--serif);font-size:10.5px;color:#8a7c66;letter-spacing:.18em;}
+.r-top .pr{width:104px;height:1px;background:var(--ink);position:relative;}
+.r-top .pr::after{content:"";position:absolute;left:0;top:0;height:1px;width:15%;background:var(--moss);}
+.r-acts{position:absolute;left:38px;right:38px;bottom:62px;display:flex;align-items:baseline;justify-content:space-between;}
+.r-acts .b{font-family:var(--serif);font-size:15px;color:var(--ink);letter-spacing:.16em;}
+.r-acts .sep{flex:1;height:1px;background:var(--hair);margin:0 16px;align-self:center;}
+.r-acts .no{color:#8a7c66;}
+
+/* 复习竖排 */
+.v-word{position:absolute;top:150px;right:44px;writing-mode:vertical-rl;font-family:var(--serif);
+  font-size:58px;color:var(--ink);letter-spacing:.16em;line-height:1.1;}
+.v-kana2{position:absolute;top:158px;left:40px;writing-mode:vertical-rl;font-family:var(--serif);
+  font-size:13px;color:#8a7c66;letter-spacing:.34em;}
+.v-midline{position:absolute;left:38px;right:38px;top:430px;height:1px;background:var(--hair);}
+.v-zh{position:absolute;left:38px;top:452px;font-family:var(--serif);font-size:16px;color:var(--ink);letter-spacing:.12em;}
+.v-hint{position:absolute;left:38px;top:484px;font-size:10px;color:#9a8c76;letter-spacing:.08em;}
+
+/* 复习横排 */
+.hw{position:absolute;top:150px;left:38px;right:38px;}
+.hw .lbl{font-family:var(--serif);font-size:10px;color:#8a7c66;letter-spacing:.3em;}
+.hw .w{margin-top:16px;font-family:var(--serif);font-size:44px;color:var(--ink);letter-spacing:.08em;line-height:1.3;}
+.hw .k{margin-top:14px;font-family:var(--serif);font-size:14px;color:#8a7c66;letter-spacing:.24em;}
+.hw .line{margin-top:22px;width:56px;height:1px;background:var(--ink);}
+.hw .z{margin-top:18px;font-family:var(--serif);font-size:17px;color:var(--ink);letter-spacing:.16em;}
+.hw .hint{margin-top:16px;font-size:10px;color:#9a8c76;letter-spacing:.08em;}
+</style>
+</head>
+<body>
+
+<div class="board-title">
+  <h1>06 侘寂 · 竖排 / 横排 对照</h1>
+  <div class="meta">同一套语言，只改书写方向：上=竖排，下=横排<br>看哪一版更耐读、更像这个产品</div>
+  <div class="badge">A / B</div>
+</div>
+
+<div class="board">
+
+  <!-- ================= 第 1 列：首页 ================= -->
+  <div>
+    <div class="col-h">首 页 HOME <span>竖排 / 横排</span></div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag">竖 排</span><span class="nm">竖排标题</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="v-kick">初級日本語読解</div>
+        <div class="v-line"></div><div class="v-dot"></div>
+        <div class="v-title">日語初級読解</div>
+        <div class="v-note">生 活 と 文 化<br>全 五 篇</div>
+        <div class="h-num">十二<span>語</span></div>
+        <div class="h-rule"></div>
+        <div class="h-cta">開 始 復 習<span class="u"></span></div>
+        <div class="h-meta">全 仮 名 付 き<br>七 十 三 句</div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag h">横 排</span><span class="nm">横排标题</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="hh">
+          <div class="k">初 級 日 本 語 読 解</div>
+          <h1>日语<br>初级阅读</h1>
+          <div class="dash"></div>
+          <div class="nt">生 活 と 文 化 · 全 五 篇</div>
+        </div>
+        <div class="h-num">十二<span>語</span></div>
+        <div class="h-rule"></div>
+        <div class="h-cta">開 始 復 習<span class="u"></span></div>
+        <div class="h-meta">全 仮 名 付 き<br>七 十 三 句</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 第 2 列：课文 ================= -->
+  <div>
+    <div class="col-h">课 文 ARTICLE <span>竖排 / 横排</span></div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag">竖 排</span><span class="nm">縦書き · 右起</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="a-head"><span class="t">日本の自動販売機</span><span class="n">第 一 篇</span></div>
+        <div class="a-cols">
+          <p class="a-s"><span class="no">一</span>　<ruby>日本<rt>にほん</rt></ruby>には、<ruby>自動販売機<rt>じどうはんばいき</rt></ruby>がたくさんあります。</p>
+          <p class="a-s"><span class="no">二</span>　<ruby>約<rt>やく</rt></ruby><ruby>四百<rt>よんひゃく</rt></ruby>万台あります。</p>
+          <p class="a-s"><span class="no">三</span>　<ruby>世界<rt>せかい</rt></ruby>でも、<ruby>特<rt>とく</rt></ruby>に<ruby>多<rt>おお</rt></ruby>い<ruby>国<rt>くに</rt></ruby>です。</p>
+          <p class="a-s"><span class="no">四</span>　<ruby>冬<rt>ふゆ</rt></ruby>は、あたたかい<ruby>飲<rt>の</rt></ruby>み<ruby>物<rt>もの</rt></ruby>もあります。</p>
+        </div>
+        <div class="a-foot"><span>縦 書 き · 右 よ り 左 へ</span><span>四 / 十三</span></div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag h">横 排</span><span class="nm">横書き · 上往下</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="a-head"><span class="t">日本の自動販売機</span><span class="n">第 一 篇</span></div>
+        <div class="h-list">
+          <p class="h-s"><span class="no">一</span><span class="jp"><ruby>日本<rt>にほん</rt></ruby>には、<ruby>自動販売機<rt>じどうはんばいき</rt></ruby>がたくさんあります。</span></p>
+          <p class="h-s"><span class="no">二</span><span class="jp"><ruby>約<rt>やく</rt></ruby><ruby>四百<rt>よんひゃく</rt></ruby>万台あります。</span></p>
+          <p class="h-s"><span class="no">三</span><span class="jp"><ruby>世界<rt>せかい</rt></ruby>でも、<ruby>特<rt>とく</rt></ruby>に<ruby>多<rt>おお</rt></ruby>い<ruby>国<rt>くに</rt></ruby>です。</span></p>
+          <p class="h-s"><span class="no">四</span><span class="jp"><ruby>冬<rt>ふゆ</rt></ruby>は、あたたかい<ruby>飲<rt>の</rt></ruby>み<ruby>物<rt>もの</rt></ruby>もあります。</span></p>
+        </div>
+        <div class="a-foot"><span>横 書 き · 上 よ り 下 へ</span><span>四 / 十三</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 第 3 列：复习 ================= -->
+  <div>
+    <div class="col-h">复 习 REVIEW <span>竖排 / 横排</span></div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag">竖 排</span><span class="nm">竖排词</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="r-top"><span class="c">三 / 二十</span><span class="pr"></span><span class="c">残 十七</span></div>
+        <div class="v-kana2">じどうはんばいき</div>
+        <div class="v-word">自動販売機</div>
+        <div class="v-midline"></div>
+        <div class="v-zh">自 动 售 货 机</div>
+        <div class="v-hint">点卡片翻面 · 看读音与释义</div>
+        <div class="r-acts">
+          <span class="b no">✗ 没记住</span><span class="sep"></span><span class="b">✓ 记住了</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="flabel"><span class="tag h">横 排</span><span class="nm">横排词</span></div>
+      <div class="phone">
+        <div class="grain"></div>
+        <div class="r-top"><span class="c">三 / 二十</span><span class="pr"></span><span class="c">残 十七</span></div>
+        <div class="hw">
+          <div class="lbl">生 活 · 壱</div>
+          <div class="w">自動販売機</div>
+          <div class="k">じ ど う は ん ば い き</div>
+          <div class="line"></div>
+          <div class="z">自 动 售 货 机</div>
+          <div class="hint">点卡片翻面 · 看读音与释义</div>
+        </div>
+        <div class="r-acts">
+          <span class="b no">✗ 没记住</span><span class="sep"></span><span class="b">✓ 记住了</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
