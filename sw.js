@@ -15,7 +15,7 @@
  *   其它（manifest.webmanifest 等）不拦截，走浏览器默认 —— 保证清单永远是最新的。
  */
 
-const VERSION = 'v3';
+const VERSION = 'v5';
 const CACHE = 'jp-read-' + VERSION;
 
 /* 预缓存：8 个 HTML + tokens.css + voice.js + cloud.js + vendor 的云 SDK + 3 个图标 = 15 项。
@@ -31,6 +31,10 @@ const PRECACHE = [
   './konbini.html',
   './train.html',
   './tokens.css',
+  './common.css',
+  './wabi.css',
+  './content.js',
+  './theme.js',
   './voice.js',
   './cloud.js',
   './vendor/workbuddy-cloud-sdk.js',
