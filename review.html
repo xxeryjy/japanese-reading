@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>复习模式｜日语初级阅读</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
+   R1 本页只有 1 个 --brand 实底 = 今日卡里的「开始今日复习」，其余按钮一律 brand 描边 + 字色。
+   R2 危险动作只用 --no 文字/描边，永不做实底。R6 本页投影只出现在翻转词卡 .face。 */
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100dvh;   /* 关键：移动端 100vh 大于可见高（dvh），会凭空多出 ~60–90px 可滚高度，答题页就"能滚"了 */
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-zh);
+  font-size:15px;
+  line-height:1.7;
+  padding:env(safe-area-inset-top,0px) 0 calc(var(--s14) + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:560px;margin:0 auto;padding:var(--s4) var(--s4) 0;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+/* ---------- 页头 ---------- */
+.hdr{display:flex;align-items:center;gap:var(--s3);min-height:44px;margin-bottom:var(--s3);}
+.back{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--card);
+  color:var(--text-soft);font-size:18px;line-height:1;text-decoration:none;
+}
+.back:active{background:var(--inset);}
+.title{font-size:15px;font-weight:700;letter-spacing:.04em;color:var(--ink);}
+
+/* ---------- ① 状态行：整行可点，透明底无边框 ---------- */
+.statusbar{
+  display:flex;align-items:center;gap:var(--s2);
+  width:100%;min-height:44px;padding:0 var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  font-family:var(--font-zh);font-size:12.5px;color:var(--text-soft);
+  text-align:left;cursor:pointer;
+}
+.statusbar:active{background:var(--inset);}
+.ab-dot{flex:none;width:8px;height:8px;border-radius:50%;background:transparent;}
+.ab-dot.on{background:var(--text-muted);}      /* 未登录：实心灰 */
+.ab-dot.err{background:var(--no);}             /* 同步失败：实心红 */
+.stxt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sact{flex:none;font-weight:600;color:var(--brand);}
+.statusbar .chev{flex:none;}
+
+/* 账户面板：原位展开，不是弹层 */
+.acct{
+  margin:var(--s1) 0 var(--s3);padding:var(--s3) var(--s4);
+  background:var(--fill);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.acct-who{font-size:12.5px;color:var(--text-soft);}
+.ab-phone{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2);}
+.ab-phone input{
+  flex:1 1 120px;min-width:0;height:44px;padding:0 var(--s3);
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;
+}
+.ab-phone button{
+  height:44px;padding:0 var(--s3);white-space:nowrap;
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.ab-phone button#btnVerify{border-color:var(--brand);color:var(--brand);}
+.ab-phone button:active{background:var(--inset);}
+.ab-err{display:none;margin-top:var(--s2);font-size:12.5px;}
+.ab-err.ok{display:block;color:var(--ok);}
+.ab-err.bad{display:block;color:var(--no);}
+.ab-out{
+  display:none;margin-top:var(--s2);min-height:44px;padding:0 var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  color:var(--text-soft);font-family:inherit;font-size:13px;cursor:pointer;
+}
+.ab-out:active{background:var(--inset);}
+
+/* ---------- ② 今日卡：本页唯一白卡，唯一 --brand 实底 ---------- */
+.today{
+  margin-top:var(--s3);padding:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.t-kicker{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--text-muted);}
+.t-big{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1);}
+.t-big b{
+  font-size:40px;font-weight:700;line-height:1.1;color:var(--brand);
+  font-variant-numeric:tabular-nums;
+}
+.t-big span{font-size:15px;font-weight:600;color:var(--text-soft);}
+.t-sub{margin-top:var(--s1);font-size:12.5px;color:var(--text-soft);}
+.t-prog{margin-top:var(--s3);}
+.t-prog-row{display:flex;justify-content:space-between;gap:var(--s2);font-size:12.5px;color:var(--text-soft);}
+.t-prog-row b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.bar{height:4px;background:var(--line);border-radius:var(--r-pill);overflow:hidden;}
+.bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:var(--r-pill);transition:width .25s;}
+.t-prog .bar{margin-top:var(--s2);}
+.t-btn{
+  display:flex;align-items:center;justify-content:center;gap:var(--s2);
+  width:100%;height:52px;margin-top:var(--s4);
+  background:var(--brand);color:var(--on-fill);
+  border:0;border-radius:var(--r-ctl);
+  font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;
+}
+.t-btn:active{background:var(--brand-press);}
+.t-btn .b-n{
+  padding:1px var(--s2);border-radius:var(--r-pill);
+  background:var(--brand-tint);color:var(--brand);
+  font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;
+}
+.t-btn .b-n:empty{display:none;}
+
+/* ---------- ③ 只练没掌握的 ---------- */
+.rowbtn{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  width:100%;min-height:48px;margin-top:var(--s2);padding:0 var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  color:var(--brand);font-family:inherit;font-size:14.5px;font-weight:600;
+  text-align:left;cursor:pointer;
+}
+.rowbtn:active{background:var(--inset);}
+.rowbtn .rn{display:flex;align-items:center;gap:var(--s1);font-size:12px;font-weight:400;color:var(--text-muted);}
+.chev{color:var(--text-muted);font-size:13px;line-height:1;}
+
+/* ---------- 空队列：页内空态，不 alert ---------- */
+.emptybits{margin-top:var(--s3);padding:var(--s4);background:var(--inset);border-radius:var(--r-card);}
+.emptybits p{font-size:14px;color:var(--text-soft);}
+.emptybits .sbtns{margin-top:var(--s3);}
+
+/* ---------- 弱项诊断：最常错的词（叠在「只练没掌握的」之后） ---------- */
+.dd > summary .rn{display:flex;align-items:center;gap:var(--s1);font-size:12px;font-weight:400;color:var(--text-muted);}
+.weaklist{padding-bottom:var(--s2);}
+.wrow{
+  display:flex;align-items:center;gap:var(--s2);
+  width:100%;min-height:44px;padding:0 var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;
+}
+.wrow:active{background:var(--inset);}
+.wrow .wmain{flex:1;min-width:0;display:flex;align-items:baseline;gap:var(--s2);overflow:hidden;}
+.wrow .wja{font-family:var(--font-ja);font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wrow .wkana{font-family:var(--font-ja);font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.wrow .wbad{flex:none;font-size:12px;color:var(--no);font-variant-numeric:tabular-nums;}
+.weak-empty{padding:var(--s4) var(--s2);font-size:13px;line-height:1.65;color:var(--text-soft);}
+
+/* ---------- ④⑤ 折叠区 ---------- */
+.dd{margin-top:var(--s3);border-top:1px solid var(--line);}
+.dd > summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+  min-height:48px;padding:0 var(--s2);list-style:none;cursor:pointer;
+  border-radius:var(--r-ctl);
+  color:var(--ink);font-size:14.5px;font-weight:600;
+}
+.dd > summary::-webkit-details-marker{display:none;}
+.dd > summary:active{background:var(--inset);}
+.dd[open] > summary .chev{transform:rotate(90deg);}
+
+.pieces{padding-bottom:var(--s2);}
+/* 篇名行 44px（不是 56：6 行多出的 72px 会把「进度与同步」推出首屏） */
+.prow{
+  display:flex;align-items:center;gap:var(--s3);
+  width:100%;min-height:44px;padding:0 var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  color:var(--ink);font-family:inherit;font-size:14.5px;text-align:left;cursor:pointer;
+}
+.prow:active{background:var(--inset);}
+/* 编号印章 28×28：R5 合法位置①，篇色实底 + 白字 */
+.stamp{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--r-tag);
+  background:var(--piece);color:var(--on-fill);
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em;
+}
+/* 「全部混测」的空槽：不是印章。1px 边框只是装饰边界，识别靠「全」字与右侧文案 */
+.slot{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--r-tag);
+  border:1px solid var(--line);background:none;
+  color:var(--text-muted);font-size:11px;font-weight:600;
+}
+.prow .nm{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.prow .nm .ja{font-family:var(--font-ja);font-weight:400;color:var(--text-soft);}
+.prow .cnt{flex:none;font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.row--all .nm{font-weight:400;color:var(--text-soft);}
+
+.syncbody{padding:var(--s2) var(--s2) var(--s4);}
+.sblock{padding:var(--s3) 0;border-top:1px solid var(--line);}
+.sblock:first-child{border-top:0;padding-top:0;}
+.stitle{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text-muted);}
+.sdesc{margin-top:var(--s1);font-size:12.5px;line-height:1.65;color:var(--text-soft);}
+.sbtns{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s3);}
+.sbtn{
+  flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:13.5px;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;
+}
+.sbtn:active{background:var(--inset);}
+.sbtn.brand{border-color:var(--brand);color:var(--brand);}
+.sbtn.danger-line{border-color:var(--no);color:var(--no);}
+#importArea{
+  display:block;width:100%;min-height:84px;margin-top:var(--s3);
+  padding:var(--s2) var(--s3);
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--inset);color:var(--ink);
+  font-family:var(--font-num);font-size:12.5px;line-height:1.5;resize:vertical;
+}
+.smsg{display:none;margin-top:var(--s3);font-size:12.5px;}
+.smsg.ok{display:block;color:var(--ok);}
+.smsg.bad{display:block;color:var(--no);}
+.synced,#syncInfo{margin-top:var(--s3);font-size:12px;color:var(--text-soft);}
+.danger{
+  width:100%;min-height:44px;margin-top:var(--s2);
+  background:none;border:0;border-radius:var(--r-ctl);
+  color:var(--no);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+}
+.danger:active{background:var(--no-tint);}
+.confirm{margin-top:var(--s2);padding:var(--s3) var(--s4);border:1px solid var(--no);border-radius:var(--r-card);}
+.confirm p{font-size:12.5px;line-height:1.65;color:var(--text-soft);}
+.confirm .sbtns{margin-top:var(--s3);}
+
+/* ---------- stage：单屏（grid 四行 = 顶栏 / 连对 / 卡片 / 动作区，永不滚动） ---------- */
+/* 高度算式：100dvh − env(safe-area-inset-top) − env(safe-area-inset-bottom) − 72
+   其中 72 = .wrap 上内边距 16（--s4）+ body 下内边距 56（--s14）；body 上内边距就是 env(sat)。
+   这样 documentElement.scrollHeight === innerHeight，页面天然没有可滚的余量。 */
+.stage{
+  --stage-chrome:calc(var(--s4) + var(--s14) + env(safe-area-inset-top,0px) + env(safe-area-inset-bottom,0px));
+  display:none;
+  height:calc(100vh - var(--stage-chrome));    /* 不支持 dvh 的浏览器回退 */
+  height:calc(100dvh - var(--stage-chrome));
+  /* 中间行用 minmax(0,1fr)：卡片 = 剩余高度，任何视口都不会溢出、不会把动作区顶出去。
+     固定开销 = 顶栏 52 + 连对行 20 + 上间距 8 + 动作区 64 = 144（答题期页头已隐藏，不参与）。
+     按算式推：375×667 → 595−144 = 451；320×568 → 496−144 = 352；
+     320×568 且带 Safari 工具栏（dvh≈460）→ 460−72−144 = 244。
+     280 的兜底只在「极矮视口」里生效，见文末 @media (max-height:430px) —— 那里同时放开页面滚动，
+     否则 280 会把 64px 动作区挤出屏幕。 */
+  grid-template-rows:52px auto minmax(0,1fr) 64px;
+  overflow:hidden;
+}
+/* 只在答题期禁页面滚动；结果页/列表页必须能滚，且不能常驻 overflow-x:hidden（会杀课文页吸顶） */
+body[data-view="stage"]{overflow:hidden;}
+/* 答题期隐藏页面级页头（「复习」+ ←）：一是避免和 stage 自己的 ← 出现两个返回箭头，
+   二是页头占 44+12=56px，留着会把动作区顶到首屏之外（高度算式里没算它） */
+body[data-view="stage"] .hdr{display:none;}
+
+.stage-top{display:flex;align-items:center;gap:var(--s2);height:52px;}
+.stage-top #pos,.stage-top #left{font-size:12.5px;color:var(--text-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.stage-top .bar{flex:1;}
+.icobtn{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);color:var(--text-soft);font-size:18px;line-height:1;cursor:pointer;
+}
+.icobtn:active{background:var(--inset);}
+.streak{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s2);min-height:20px;margin-top:var(--s2);font-size:12px;color:var(--text-soft);}
+#streakTxt{white-space:nowrap;}
+.dots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line);margin-right:var(--s1);vertical-align:middle;}
+.dots i.on{background:var(--ok);}
+
+/* 卡片：两面用 grid 同格叠放（不再绝对定位），高度由网格单元决定。
+   旧写法是 .cardwrap(flex) → .flip(100%) → .inner(100%) → .face（绝对定位铺满）的四层依赖，
+   任何一环拿不到确定高度，.inner 就是 0，两个面一起塌成 0 高、文字被裁掉（只剩相对 .cardwrap 定位的 .snd）。
+   现在只剩两层高度，末端靠 grid 拉伸，不会再塌。 */
+.cardwrap{position:relative;display:block;height:100%;min-height:0;}
+.flip{
+  /* 也用 grid 撑满：.flip 是 <button>，某些浏览器对 button 内的百分比高度有特殊规则，
+     改成 grid 后 .inner 靠拉伸拿高度，不再依赖 % 是否生效 */
+  display:grid;grid-template-rows:minmax(0,1fr);
+  position:relative;width:100%;height:100%;min-height:0;
+  padding:0;border:0;background:none;perspective:1200px;
+  font-family:inherit;color:inherit;cursor:pointer;
+}
+.inner{
+  display:grid;
+  /* 兜底：即使外层高度链再次出问题，卡片也不会低于 240px（宁可溢出，也不要整片空白） */
+  grid-template-rows:minmax(240px,1fr);
+  position:relative;width:100%;height:100%;min-height:0;transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.2,.7,.3,1);
+}
+.flip.flipped .inner{transform:rotateY(180deg);}
+/* 词卡是全站唯二合法投影之一（R6 第 2 类：z 轴上有位移）。
+   两面占同一网格单元 → 高度=单元高度，内容超高时只在卡内滚动。 */
+.face{
+  /* 绝对定位 + 显式宽高：.inner 现在有确定高度（grid 链已修），两面铺满它。
+     grid 同格叠放（grid-area）在部分环境不生效，实测改成 absolute+100% 才稳定。 */
+  position:absolute; inset:0; width:100%; height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:0;padding:var(--s6) var(--s5) 56px;text-align:center;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  box-shadow:var(--shadow-card);
+  backface-visibility:hidden;
+}
+.face.back{transform:rotateY(180deg);}
+.tagline{position:absolute;top:var(--s3);left:var(--s3);font-size:11px;letter-spacing:.1em;color:var(--text-muted);}
+/* 篇名 pill：R5 合法位置③（篇色 tint 底 + 篇色字） */
+.tagline.pill{
+  padding:2px var(--s2);border-radius:var(--r-pill);
+  background:var(--piece-tint);color:var(--piece);
+  font-weight:600;letter-spacing:.06em;
+}
+/* .word 用 clamp：320 档不换行，长词（入ってはいけません）自动落到 1.5rem */
+.word{font-family:var(--font-ja);font-size:clamp(1.5rem,7.4vw,2rem);font-weight:700;line-height:1.5;letter-spacing:.02em;color:var(--ink);word-break:break-word;}
+.kana{font-family:var(--font-ja);font-size:15px;font-weight:400;line-height:1.6;color:var(--text-soft);margin-top:var(--s3);}
+.zh{font-family:var(--font-zh);font-size:20px;font-weight:600;line-height:1.6;color:var(--ink);margin-top:var(--s1);}
+.hint{position:absolute;bottom:var(--s4);left:0;right:0;font-size:12px;color:var(--text-muted);}
+.snd{
+  position:absolute;top:var(--s3);right:var(--s3);
+  display:flex;align-items:center;justify-content:center;
+  width:44px;height:44px;padding:0;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-pill);cursor:pointer;
+}
+.snd:active{background:var(--inset);}
+.snd svg{width:18px;height:18px;fill:var(--ink);}
+/* 退出确认条：盖在卡片内，不用 confirm / 弹层 */
+.quitbar{
+  position:absolute;left:var(--s3);right:var(--s3);bottom:var(--s3);
+  padding:var(--s3) var(--s4);
+  background:var(--card);border:1px solid var(--line-strong);border-radius:var(--r-card);
+}
+.quitbar p{font-size:13px;line-height:1.6;color:var(--text-soft);}
+.quitbar .sbtns{margin-top:var(--s2);}
+
+/* 动作区 64px：两个按钮各 52 高，始终可见，不随卡片滚动 */
+.actions{display:flex;align-items:center;gap:var(--s3);height:64px;margin:0;}
+.actions button{
+  flex:1;height:52px;min-height:52px;padding:0 var(--s2);
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;
+}
+.actions button:active{transform:scale(.985);}
+.actions .no{border-color:var(--no);color:var(--no);background:var(--no-tint);}
+.actions .yes{border-color:var(--ok);color:var(--ok);background:var(--ok-tint);}
+
+/* ---------- result ---------- */
+.result{display:none;margin-top:var(--s3);padding:var(--s6) var(--s5);text-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);}
+.score{font-size:44px;font-weight:700;line-height:1.3;color:var(--brand);}
+.score small{font-size:16px;font-weight:400;color:var(--text-soft);}
+.result p{margin-top:var(--s3);font-size:14px;color:var(--text-soft);}
+.result .nextdue{font-size:13px;}
+.wronglist{margin-top:var(--s4);text-align:left;font-size:14px;}
+.wronglist div{padding:var(--s2) 0;border-bottom:1px dashed var(--line);}
+.wronglist div:last-child{border-bottom:0;}
+.wronglist b{font-family:var(--font-ja);font-weight:700;}
+.wronglist .k{font-size:12.5px;color:var(--text-soft);}
+.resultbtns{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s5);}
+.resultbtns button{
+  min-height:48px;padding:var(--s3);
+  border:1px solid var(--line);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;
+}
+.resultbtns button:active{transform:scale(.99);}
+.resultbtns .primary{background:var(--brand);border-color:var(--brand);color:var(--on-fill);}
+.resultbtns .primary:active{background:var(--brand-press);}
+.empty{padding:var(--s5) var(--s2);text-align:center;font-size:14px;color:var(--text-soft);}
+
+/* ---------- 边界收敛：交互元素用 --line-control（四个表面 3.02–3.47，满足 1.4.11）；
+              卡片 / 面板的 1px 装饰线仍用 --line。状态色描边（.actions .no/.yes、.sbtn.brand）特异性更高，不受影响 ---------- */
+.back,.sbtn,#importArea,.snd,.actions button,.resultbtns button,.ab-phone input,.ab-phone button{border-color:var(--line-control);}
+
+/* ---------- 320 档：先删后缩 ---------- */
+@media (max-width:360px){
+  .wrap{padding-left:var(--s3);padding-right:var(--s3);}
+  .today{padding:var(--s4);}
+  .t-big b{font-size:34px;}
+  .actions button{min-height:48px;}
+  /* .word 不在这里改字号：clamp(1.5rem,7.4vw,2rem) 的最小值已经负责 320 档，再写死会盖掉 clamp */
+}
+
+/* 视口极矮（横屏 / 小窗 / 键盘弹起）：52+20+280+64=416 装不下时，给卡片 280 兜底
+   并放开页面滚动 —— 绝不把 64px 动作区裁掉（那样按钮就点不到了） */
+@media (max-height:430px){
+  body[data-view="stage"]{overflow:auto;}
+  .stage{height:auto;min-height:calc(100dvh - var(--stage-chrome));}
+  .cardwrap{min-height:280px;}
+}
+
+/* ---------- 动效降级 ---------- */
+@media (prefers-reduced-motion:reduce){
+  .bar i{transition:none;}
+  .inner{transition:none;transform:none !important;transform-style:flat;}
+  .face{transition:opacity .12s;backface-visibility:visible;}
+  .face.back{transform:none !important;opacity:0;}
+  .flip.flipped .inner .face.front{opacity:0;}
+  .flip.flipped .inner .face.back{opacity:1;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hdr">
+    <a class="back" href="index.html" aria-label="返回首页"><span aria-hidden="true">←</span></a>
+    <div class="title">复习</div>
+  </header>
+
+  <section id="start">
+
+    <!-- ① 状态行：44px，整行可点；点开只在原位展开账户面板 -->
+    <button class="statusbar" id="statusBar" type="button" aria-expanded="false" aria-controls="acctPanel">
+      <span class="ab-dot" id="abDot" aria-hidden="true"></span>
+      <span class="stxt" id="abTxt">进度同步：检查中…</span>
+      <span class="sact" id="statusAct">登录</span>
+      <span class="chev" aria-hidden="true">›</span>
+    </button>
+
+    <div class="acct" id="acctPanel" hidden>
+      <div class="acct-who" id="acctWho">未登录 · 进度只在这台手机</div>
+      <div class="ab-phone" id="abPhone">
+        <input id="phoneInput" type="tel" inputmode="numeric" autocomplete="tel" placeholder="11 位手机号" aria-label="手机号">
+        <button id="btnSendCode" type="button">获取验证码</button>
+        <input id="codeInput" type="tel" inputmode="numeric" autocomplete="one-time-code" placeholder="短信验证码" aria-label="短信验证码">
+        <button id="btnVerify" type="button">登录</button>
+      </div>
+      <div class="ab-err" id="abErr" role="status"></div>
+      <button class="ab-out" id="btnSignOut" type="button">退出登录</button>
+    </div>
+
+    <!-- ② 今日卡 -->
+    <div class="today">
+      <div class="t-kicker">今天</div>
+      <div class="t-big"><b id="dDue">0</b><span>个词到期</span></div>
+      <div class="t-sub" id="tSub">约 2 分钟 · 每次最多 20 个</div>
+      <div class="t-prog">
+        <div class="t-prog-row">
+          <span>已掌握 <b id="dMastered">0</b> / 75</span>
+          <span><b id="dNew">0</b> 个还没开始</span>
+        </div>
+        <div class="bar" id="masterBar" role="progressbar" aria-valuemin="0" aria-valuemax="75" aria-valuenow="0" aria-label="已掌握进度">
+          <i id="masterFill"></i>
+        </div>
+      </div>
+      <button class="t-btn" data-scope="due" type="button">开始今日复习<span class="b-n" id="cDue"></span></button>
+    </div>
+
+    <!-- ③ 只练没掌握的 -->
+    <button class="rowbtn" data-scope="weak" type="button">
+      <span>只练没掌握的</span>
+      <span class="rn"><span id="cWeak">0 词</span><span class="chev" aria-hidden="true">›</span></span>
+    </button>
+
+    <!-- ③b 弱项诊断：按答错次数倒序，点一行只练这一个词 -->
+    <details class="dd" id="ddWeak">
+      <summary><span>最常错的词</span><span class="rn"><span id="cWeakBad">0 个</span><span class="chev" aria-hidden="true">›</span></span></summary>
+      <div class="weaklist" id="weakList"></div>
+    </details>
+
+    <!-- 空队列：页内空态，不弹 alert -->
+    <div class="emptybits" id="emptyNote" hidden>
+      <p id="emptyTxt">今天没有到期的词 · 明天再来</p>
+      <div class="sbtns">
+        <a class="sbtn" href="reading.html">去读一篇</a>
+        <button class="sbtn" data-scope="weak" type="button">只练没掌握的</button>
+      </div>
+    </div>
+
+    <!-- ④ 按篇练 / 全部混测 -->
+    <details class="dd" id="ddPiece">
+      <summary><span>按篇练 / 全部混测</span><span class="chev" aria-hidden="true">›</span></summary>
+      <div class="pieces">
+        <button class="prow" data-scope="a1" data-piece="a1" type="button">
+          <span class="stamp" aria-hidden="true">01</span>
+          <span class="nm">生活 · <span class="ja" lang="ja">自動販売機</span></span>
+          <span class="cnt" id="cA1"></span>
+        </button>
+        <button class="prow" data-scope="a2" data-piece="a2" type="button">
+          <span class="stamp" aria-hidden="true">02</span>
+          <span class="nm">文化 · <span class="ja" lang="ja">お正月</span></span>
+          <span class="cnt" id="cA2"></span>
+        </button>
+        <button class="prow" data-scope="a3" data-piece="a3" type="button">
+          <span class="stamp" aria-hidden="true">03</span>
+          <span class="nm">文化 · <span class="ja" lang="ja">温泉</span></span>
+          <span class="cnt" id="cA3"></span>
+        </button>
+        <button class="prow" data-scope="a4" data-piece="a4" type="button">
+          <span class="stamp" aria-hidden="true">04</span>
+          <span class="nm">生活 · <span class="ja" lang="ja">コンビニ</span></span>
+          <span class="cnt" id="cA4"></span>
+        </button>
+        <button class="prow" data-scope="a5" data-piece="a5" type="button">
+          <span class="stamp" aria-hidden="true">05</span>
+          <span class="nm">生活 · <span class="ja" lang="ja">電車のマナー</span></span>
+          <span class="cnt" id="cA5"></span>
+        </button>
+        <button class="prow row--all" data-scope="all" type="button">
+          <span class="slot" aria-hidden="true">全</span>
+          <span class="nm">全部混测</span>
+          <span class="cnt">75 词</span>
+        </button>
+      </div>
+    </details>
+
+    <!-- ⑤ 进度与同步 -->
+    <details class="dd" id="ddSync">
+      <summary><span>进度与同步</span><span class="chev" aria-hidden="true">›</span></summary>
+      <div class="syncbody">
+
+        <div class="sblock">
+          <div class="stitle">账户</div>
+          <div class="sdesc" id="acctLine">未登录 · 进度只在这台手机</div>
+          <div class="sbtns"><button class="sbtn" id="btnAcct" type="button">登录 / 管理账户</button></div>
+        </div>
+
+        <div class="sblock">
+          <div class="stitle">离线备份</div>
+          <p class="sdesc">手机上学完点「复制同步链接」，把链接发给自己；在另一台设备粘贴到下面导入。反向同理。</p>
+          <div class="sbtns"><button class="sbtn" id="btnCopyLink" type="button">复制同步链接</button></div>
+          <textarea id="importArea" rows="3" spellcheck="false" autocomplete="off" aria-label="粘贴同步链接或同步码" placeholder="把同步链接或同步码粘贴到这里"></textarea>
+          <div class="sbtns"><button class="sbtn brand" id="btnImport" type="button">导入这份进度</button></div>
+          <div class="smsg" id="syncMsg" role="status" aria-live="polite"></div>
+          <div id="syncInfo"></div>
+        </div>
+
+        <div class="sblock">
+          <div class="stitle">朗读</div>
+          <p class="sdesc">设备上的日语语音、语速在这里改，设置只保存在这台手机。</p>
+          <div class="sbtns"><span data-voice-slot></span></div>
+        </div>
+
+        <div class="sblock">
+          <button class="danger" id="btnReset" type="button">清空学习进度</button>
+          <div class="confirm" id="resetConfirm" hidden>
+            <p>清空后本机与云端记录都会删除，无法恢复。</p>
+            <div class="sbtns">
+              <button class="sbtn" id="btnResetNo" type="button">取消</button>
+              <button class="sbtn danger-line" id="btnResetYes" type="button">确认清空</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </details>
+  </section>
+
+  <section class="stage" id="stage">
+    <div class="stage-top">
+      <button class="icobtn" id="btnQuit" type="button" aria-label="退出本轮">←</button>
+      <span id="pos">1 / 20</span>
+      <div class="bar" id="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="本轮进度"><i id="fill"></i></div>
+      <span id="left"></span>
+    </div>
+    <div class="streak">连对 <span class="dots" id="dots"></span><span id="streakTxt"></span></div>
+
+    <div class="cardwrap">
+      <button class="flip" id="flip" type="button" aria-label="翻面">
+        <div class="inner">
+          <div class="face front" id="faceFront">
+            <div class="tagline pill" id="tagF">生活 01</div>
+            <div class="word" id="wJa" lang="ja">—</div>
+            <div class="hint">点一下，看读音和意思</div>
+          </div>
+          <div class="face back" id="faceBack" aria-hidden="true">
+            <div class="tagline" aria-hidden="true">答え</div>
+            <div class="kana" id="wKana" lang="ja"></div>
+            <div class="zh" id="wZh" lang="zh-CN"></div>
+            <div class="hint">记不起来点左边，记得点右边</div>
+          </div>
+        </div>
+      </button>
+      <button class="snd" id="speak" type="button" aria-label="朗读这个词" title="朗读">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+
+      <!-- 退出确认：页内条，不用 confirm -->
+      <div class="quitbar" id="quitNote" hidden>
+        <p id="quitTxt">本轮已记录 0 个词，还剩 0 个</p>
+        <div class="sbtns">
+          <button class="sbtn" id="btnQuitNo" type="button">继续</button>
+          <button class="sbtn danger-line" id="btnQuitYes" type="button">结束本轮</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="no" id="btnNo" type="button">✗ 没记住</button>
+      <button class="yes" id="btnYes" type="button">✓ 记住了</button>
+    </div>
+
+    <div class="sr" id="live" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="result" id="result">
+    <div class="score"><span id="okCount">0</span><small> / <span id="totalCount">0</span></small></div>
+    <p id="verdict"></p>
+    <p class="nextdue" id="nextDue"></p>
+    <div class="wronglist" id="wrongList"></div>
+    <div class="resultbtns">
+      <button class="primary" id="btnRestart" type="button">继续今日复习</button>
+      <button id="btnAgain" type="button">再练这些没记住的</button>
+      <button id="btnHome" type="button">回首页</button>
+    </div>
+  </section>
+</div>
+
+<script src="vendor/workbuddy-cloud-sdk.js"></script>
+<script>
+if(!window.WorkBuddyCloud){
+  var _s=document.createElement('script');
+  _s.src='https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js';
+  document.head.appendChild(_s);
+}
+</script>
+<script src="cloud.js"></script>
+<script src="voice.js"></script>
+<script>
+const WORDS = [
+  // 生活 01
+  {ja:'自動販売機', kana:'じどうはんばいき', zh:'自动售货机', tag:'生活 01', a:'a1'},
+  {ja:'約', kana:'やく', zh:'大约、约', tag:'生活 01', a:'a1'},
+  {ja:'〜台', kana:'だい', zh:'台（数机器的量词）', tag:'生活 01', a:'a1'},
+  {ja:'世界', kana:'せかい', zh:'世界', tag:'生活 01', a:'a1'},
+  {ja:'多い', kana:'おおい', zh:'多的', tag:'生活 01', a:'a1'},
+  {ja:'〜の一つ', kana:'ひとつ', zh:'……之一', tag:'生活 01', a:'a1'},
+  {ja:'だけではありません', kana:'', zh:'不只是……', tag:'生活 01', a:'a1'},
+  {ja:'売っています', kana:'うっています', zh:'有在卖、正在卖', tag:'生活 01', a:'a1'},
+  {ja:'あたたかい', kana:'', zh:'温暖的、热的', tag:'生活 01', a:'a1'},
+  {ja:'ラベル', kana:'', zh:'标签（红＝热饮，蓝＝冷饮）', tag:'生活 01', a:'a1'},
+  {ja:'安全（な）', kana:'あんぜん', zh:'安全的', tag:'生活 01', a:'a1'},
+  {ja:'安心（な）', kana:'あんしん', zh:'安心的、放心的', tag:'生活 01', a:'a1'},
+  {ja:'便利（な）', kana:'べんり', zh:'方便的', tag:'生活 01', a:'a1'},
+  {ja:'寒い', kana:'さむい', zh:'寒冷的（天气）', tag:'生活 01', a:'a1'},
+  {ja:'〜たいです', kana:'', zh:'想……（愿望）', tag:'生活 01', a:'a1'},
+  // 文化 02
+  {ja:'お正月', kana:'おしょうがつ', zh:'新年、正月（1/1–1/3）', tag:'文化 02', a:'a2'},
+  {ja:'大切（な）', kana:'たいせつ', zh:'重要的', tag:'文化 02', a:'a2'},
+  {ja:'休み', kana:'やすみ', zh:'休息、假期', tag:'文化 02', a:'a2'},
+  {ja:'年賀状', kana:'ねんがじょう', zh:'贺年卡', tag:'文化 02', a:'a2'},
+  {ja:'送ります', kana:'おくります', zh:'寄、送', tag:'文化 02', a:'a2'},
+  {ja:'一緒に', kana:'いっしょに', zh:'一起', tag:'文化 02', a:'a2'},
+  {ja:'おせち料理', kana:'おせちりょうり', zh:'御节料理（年菜）', tag:'文化 02', a:'a2'},
+  {ja:'意味', kana:'いみ', zh:'意思、含义', tag:'文化 02', a:'a2'},
+  {ja:'黒豆', kana:'くろまめ', zh:'黑豆（寓意健康勤劳）', tag:'文化 02', a:'a2'},
+  {ja:'数の子', kana:'かずのこ', zh:'鲱鱼籽（寓意多子多孙）', tag:'文化 02', a:'a2'},
+  {ja:'神社', kana:'じんじゃ', zh:'神社', tag:'文化 02', a:'a2'},
+  {ja:'初詣', kana:'はつもうで', zh:'新年初次参拜', tag:'文化 02', a:'a2'},
+  {ja:'健康', kana:'けんこう', zh:'健康', tag:'文化 02', a:'a2'},
+  {ja:'お願いします', kana:'おねがいします', zh:'拜托、祈愿', tag:'文化 02', a:'a2'},
+  {ja:'お年玉', kana:'としだま', zh:'压岁钱', tag:'文化 02', a:'a2'},
+  // 文化 03
+  {ja:'温泉', kana:'おんせん', zh:'温泉', tag:'文化 03', a:'a3'},
+  {ja:'火山', kana:'かざん', zh:'火山', tag:'文化 03', a:'a3'},
+  {ja:'お湯', kana:'おゆ', zh:'热水', tag:'文化 03', a:'a3'},
+  {ja:'気持ちがいい', kana:'きもちがいい', zh:'舒服、心情好', tag:'文化 03', a:'a3'},
+  {ja:'ルール', kana:'', zh:'规则', tag:'文化 03', a:'a3'},
+  {ja:'体を洗う', kana:'からだをあらう', zh:'洗身体', tag:'文化 03', a:'a3'},
+  {ja:'タオル', kana:'', zh:'毛巾', tag:'文化 03', a:'a3'},
+  {ja:'水着', kana:'みずぎ', zh:'泳衣', tag:'文化 03', a:'a3'},
+  {ja:'髪を上げる', kana:'かみをあげる', zh:'把头发扎起来', tag:'文化 03', a:'a3'},
+  {ja:'露天風呂', kana:'ろてんぶろ', zh:'露天温泉', tag:'文化 03', a:'a3'},
+  {ja:'旅館', kana:'りょかん', zh:'日式旅馆', tag:'文化 03', a:'a3'},
+  {ja:'体にいい', kana:'からだにいい', zh:'对身体好', tag:'文化 03', a:'a3'},
+  {ja:'特に', kana:'とくに', zh:'特别是、尤其', tag:'文化 03', a:'a3'},
+  {ja:'いつか', kana:'', zh:'总有一天', tag:'文化 03', a:'a3'},
+  {ja:'入ってはいけません', kana:'はいってはいけません', zh:'不可以进入', tag:'文化 03', a:'a3'},
+  // 生活 04
+  {ja:'コンビニ', kana:'', zh:'便利店', tag:'生活 04', a:'a4'},
+  {ja:'〜店', kana:'てん', zh:'……家（店铺量词）', tag:'生活 04', a:'a4'},
+  {ja:'夜', kana:'よる', zh:'夜晚', tag:'生活 04', a:'a4'},
+  {ja:'食べ物', kana:'たべもの', zh:'食物', tag:'生活 04', a:'a4'},
+  {ja:'飲み物', kana:'のみもの', zh:'饮料', tag:'生活 04', a:'a4'},
+  {ja:'お弁当', kana:'おべんとう', zh:'便当', tag:'生活 04', a:'a4'},
+  {ja:'おにぎり', kana:'', zh:'饭团', tag:'生活 04', a:'a4'},
+  {ja:'おでん', kana:'', zh:'关东煮', tag:'生活 04', a:'a4'},
+  {ja:'温めます', kana:'あたためます', zh:'加热', tag:'生活 04', a:'a4'},
+  {ja:'レジ', kana:'', zh:'收银台', tag:'生活 04', a:'a4'},
+  {ja:'自分で', kana:'じぶんで', zh:'自己（做）', tag:'生活 04', a:'a4'},
+  {ja:'コピー機', kana:'コピーき', zh:'复印机', tag:'生活 04', a:'a4'},
+  {ja:'宅配便', kana:'たくはいびん', zh:'快递服务', tag:'生活 04', a:'a4'},
+  {ja:'傘', kana:'かさ', zh:'伞', tag:'生活 04', a:'a4'},
+  {ja:'持って帰ります', kana:'もってかえります', zh:'带回去、拿回家', tag:'生活 04', a:'a4'},
+  // 生活 05
+  {ja:'電車', kana:'でんしゃ', zh:'电车', tag:'生活 05', a:'a5'},
+  {ja:'ホーム', kana:'', zh:'站台', tag:'生活 05', a:'a5'},
+  {ja:'順番に', kana:'じゅんばんに', zh:'按顺序', tag:'生活 05', a:'a5'},
+  {ja:'並びます', kana:'ならびます', zh:'排队、排列', tag:'生活 05', a:'a5'},
+  {ja:'携帯電話', kana:'けいたいでんわ', zh:'手机', tag:'生活 05', a:'a5'},
+  {ja:'マナーモード', kana:'', zh:'静音模式', tag:'生活 05', a:'a5'},
+  {ja:'車内', kana:'しゃない', zh:'车厢内', tag:'生活 05', a:'a5'},
+  {ja:'優先席', kana:'ゆうせんせき', zh:'优先席（爱心专座）', tag:'生活 05', a:'a5'},
+  {ja:'お年寄り', kana:'おとしより', zh:'老年人', tag:'生活 05', a:'a5'},
+  {ja:'ゆずります', kana:'', zh:'让（座位）', tag:'生活 05', a:'a5'},
+  {ja:'女性専用車', kana:'じょせいせんようしゃ', zh:'女性专用车厢', tag:'生活 05', a:'a5'},
+  {ja:'かけ込み乗車', kana:'かけこみじょうしゃ', zh:'赶着冲上车', tag:'生活 05', a:'a5'},
+  {ja:'荷物', kana:'にもつ', zh:'行李', tag:'生活 05', a:'a5'},
+  {ja:'ごみ箱', kana:'ごみばこ', zh:'垃圾箱', tag:'生活 05', a:'a5'},
+  {ja:'正確（な）', kana:'せいかく', zh:'准确的、准时的', tag:'生活 05', a:'a5'}
+];
+
+const $ = id => document.getElementById(id);
+const KEY = 'jp_srs_v2';
+const DAY = 86400000;
+const STEP_MS = {1: 1*DAY, 2: 3*DAY, 3: 7*DAY};
+const MASTER_AT = 3;
+const MAX_SESSION = 20;   // 单次今日复习上限
+
+let SRS = {};
+try{ SRS = JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(e){ SRS = {}; }
+const saveSRS = ()=>{ try{ localStorage.setItem(KEY, JSON.stringify(SRS)); }catch(e){} };
+const rec = w => SRS[w.ja] || {s:0, due:0, n:0, bad:0};
+const isMastered = w => rec(w).s >= MASTER_AT;
+const isNew = w => rec(w).n === 0;
+const isDue = w => !isMastered(w) && rec(w).due <= Date.now();
+
+let queue = [], idx = 0, okCount = 0, wrongList = [], flipped = false;
+let seenCount = new Map();   // 本轮每词出现次数，防重复插入死循环
+
+function refreshDash(){
+  const mastered = WORDS.filter(isMastered).length;
+  const due = WORDS.filter(isDue).length;
+  $('dMastered').textContent = mastered;
+  $('dDue').textContent = due;
+  $('dNew').textContent = WORDS.filter(isNew).length;
+  $('cDue').textContent = due ? '本轮 ' + Math.min(due, MAX_SESSION) + ' 词' : '';
+  $('cWeak').textContent = WORDS.filter(w=>!isMastered(w)).length + ' 词';
+  ['a1','a2','a3','a4','a5'].forEach(s=>{
+    const el = $('c'+s.toUpperCase());
+    if(el) el.textContent = WORDS.filter(w=>w.a===s).length + ' 词';
+  });
+  const sub = $('tSub');
+  if(sub) sub.textContent = due ? '约 2 分钟 · 每次最多 ' + MAX_SESSION + ' 个' : '今天没有到期的词，明天再来';
+  const fill = $('masterFill');
+  if(fill) fill.style.width = Math.round(mastered / WORDS.length * 100) + '%';
+  const bar = $('masterBar');
+  if(bar) bar.setAttribute('aria-valuenow', String(mastered));
+  renderWeak();          // 错词次数会随答题变化，顺手刷新弱项榜
+}
+
+function buildScope(scope){
+  if(scope === 'due'){
+    const list = WORDS.filter(isDue);
+    list.sort((a,b)=> rec(a).due - rec(b).due);
+    return list.slice(0, MAX_SESSION);          // 每次最多 20 个，剩下的下次继续
+  }
+  if(scope === 'weak') return WORDS.filter(w=>!isMastered(w));
+  if(scope === 'all') return WORDS.slice();
+  return WORDS.filter(w=>w.a===scope);
+}
+
+const shuffle = arr => { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; };
+
+// 空队列：页内空态（不用 alert）
+function showEmpty(scope){
+  const box = $('emptyNote');
+  if(!box) return;
+  $('emptyTxt').textContent = scope === 'due'
+    ? '今天没有到期的词 · 明天再来'
+    : '这个范围里暂时没有需要复习的词';
+  box.hidden = false;
+  if(box.scrollIntoView) box.scrollIntoView({block:'nearest'});
+}
+
+/* 视图切换：list / stage / result
+   stage 期间给 body 挂 data-view="stage" 禁页面滚动；结果页与列表页恢复普通文档流
+   （注意：只在 stage 期加 overflow:hidden，绝不能给 body/.wrap 常驻 overflow-x:hidden） */
+function setView(view){
+  document.body.setAttribute('data-view', view);
+  $('start').style.display = (view === 'list') ? '' : 'none';
+  $('stage').style.display = (view === 'stage') ? 'grid' : 'none';
+  $('result').style.display = (view === 'result') ? 'block' : 'none';
+  if(view !== 'stage'){ const q = $('quitNote'); if(q) q.hidden = true; }
+}
+
+/* 队列直投：startGame（按 scope 建队）和弱项单练（单元素数组）共用同一条路径，
+   SRS 计分与云端写入完全不变 */
+function startQueue(words, scope){
+  if(!words.length){ showEmpty(scope || 'due'); return; }
+  $('emptyNote').hidden = true;
+  queue = (scope === 'all') ? shuffle(words.slice()) : words.slice();
+  idx = 0; okCount = 0; wrongList = []; seenCount = new Map();
+  setView('stage');
+  render();
+}
+
+function startGame(scope){
+  startQueue(buildScope(scope), scope);
+}
+
+function fmt(ts){
+  if(!ts) return '今天';
+  const d = new Date(ts), now = new Date();
+  const diff = Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()) - new Date(now.getFullYear(),now.getMonth(),now.getDate()))/DAY);
+  if(diff <= 0) return '今天';
+  if(diff === 1) return '明天';
+  if(diff < 30) return diff + ' 天后';
+  return (d.getMonth()+1) + ' 月 ' + d.getDate() + ' 日';
+}
+
+// 翻面：视觉靠 .flipped，无障碍靠 aria-hidden 切换（backface-visibility 只藏视觉，读屏会提前念出答案）
+function setFlip(v, announce){
+  flipped = !!v;
+  $('flip').classList.toggle('flipped', flipped);
+  const back = $('faceBack'), front = $('faceFront'), live = $('live');
+  if(back) back.setAttribute('aria-hidden', flipped ? 'false' : 'true');
+  if(front) front.setAttribute('aria-hidden', flipped ? 'true' : 'false');
+  if(announce && live){
+    const w = queue[idx];
+    live.textContent = !w ? '' : (flipped
+      ? '已翻面。读音 ' + (w.kana || w.ja) + '，意思 ' + w.zh
+      : w.ja);
+  }
+}
+
+function render(){
+  setFlip(false, false);
+  const w = queue[idx], r = rec(w);
+  $('tagF').textContent = w.tag;
+  $('flip').setAttribute('data-piece', w.a || '');
+  $('wJa').textContent = w.ja;
+  $('wKana').textContent = w.kana || '（无汉字读音）';
+  $('wZh').textContent = w.zh;
+  $('pos').textContent = (idx+1)+' / '+queue.length;
+  $('left').textContent = '剩 '+(queue.length-idx-1);
+  $('fill').style.width = (idx/queue.length*100)+'%';
+  $('pbar').setAttribute('aria-valuenow', String(Math.round(idx/queue.length*100)));
+  $('dots').innerHTML = [0,1,2].map(i=>`<i class="${i < Math.min(r.s,3) ? 'on':''}"></i>`).join('');
+  $('streakTxt').textContent = r.s >= MASTER_AT
+    ? '已掌握'
+    : (r.s === 0 ? '这轮全对才算 1 次' : r.s + ' / 3，再对 ' + (MASTER_AT - r.s) + ' 次掌握');
+  $('flip').setAttribute('aria-label', '第 ' + (idx+1) + ' 张，共 ' + queue.length + ' 张。' + w.ja + '。点按显示读音与释义');
+}
+
+function review(isOk){
+  const w = queue[idx];
+  const r = Object.assign({s:0, due:0, n:0, bad:0}, SRS[w.ja] || {});
+  r.n += 1;
+  if(isOk){
+    r.s += 1;
+    const step = Math.min(r.s, 3);
+    r.due = Date.now() + STEP_MS[step];
+    if(r.s > MASTER_AT) r.s = MASTER_AT;
+    okCount++;
+  }else{
+    r.s = 0; r.bad += 1; r.due = Date.now();
+    wrongList.push(w);
+    // 同一次会话里，隔 5 张再考一次（每词最多补考 1 次）
+    const c = seenCount.get(w.ja) || 0;
+    if(c < 1){
+      seenCount.set(w.ja, c + 1);
+      const at = idx + 6;
+      if(at < queue.length) queue.splice(at, 0, w); else queue.push(w);
+    }
+  }
+  SRS[w.ja] = r; saveSRS();
+  pushWord(w);
+  idx++;
+  if(idx >= queue.length) finish(); else render();
+}
+
+function finish(){
+  setView('result');
+  $('okCount').textContent = okCount;
+  $('totalCount').textContent = queue.length;
+  const rate = okCount / queue.length;
+  $('verdict').textContent = rate === 1 ? '全对。这批词已经进入记忆周期。'
+    : rate >= 0.8 ? '大部分记住了，错的几个今天还会再出现。'
+    : rate >= 0.5 ? '过半了。先用"再练错题"过一轮，比重新从头更有效。'
+    : '这轮偏难——说明这批还很生，明天只做"今日复习"就好，别硬推。';
+  $('nextDue').textContent = `已掌握 ${WORDS.filter(isMastered).length} / ${WORDS.length}，今天还有 ${WORDS.filter(isDue).length} 个待复习。`;
+  const wl = $('wrongList');
+  wl.innerHTML = wrongList.length ? '' : '<div class="empty">没有错词。</div>';
+  wrongList.forEach(w=>{
+    const d = document.createElement('div');
+    d.innerHTML = `<b lang="ja">${w.ja}</b>${w.kana?` <span class="k" lang="ja">${w.kana}</span>`:''}<div class="k" lang="zh-CN">${w.zh}</div>`;
+    wl.appendChild(d);
+  });
+  $('btnAgain').style.display = wrongList.length ? 'block' : 'none';
+  refreshDash();
+  window.scrollTo(0, 0);   // 结算是页级切换，用即时滚动；词卡之间不再滚动（iOS 会每张闪一次）
+}
+
+document.querySelectorAll('[data-scope]').forEach(b=>{
+  b.onclick = ()=> startGame(b.dataset.scope);
+});
+
+/* ---------- 弱项诊断：按累计答错次数（bad）倒序 ---------- */
+function weakRanked(){
+  return WORDS
+    .filter(w => (rec(w).bad || 0) > 0)
+    .sort((a, b) => (rec(b).bad || 0) - (rec(a).bad || 0) || a.ja.localeCompare(b.ja));
+}
+
+function renderWeak(){
+  const all = weakRanked();
+  const badge = $('cWeakBad'), box = $('weakList');
+  if(!box) return;
+  if(badge) badge.textContent = all.length + ' 个';
+  const top = all.slice(0, 10);                  // 只列前 10
+  if(!top.length){
+    box.innerHTML = '<p class="weak-empty">还没有错词记录，答错会自动记在这里</p>';
+    return;
+  }
+  box.innerHTML = top.map(function(w){
+    const bad = rec(w).bad || 0;
+    const num = (w.a || '').replace('a', '');    // a1 → 01（R5 位置①：编号印章）
+    return '<button class="wrow" type="button" data-i="' + WORDS.indexOf(w) + '" data-piece="' + (w.a || '') + '">' +
+      '<span class="stamp" aria-hidden="true">' + (num ? '0' + num : '—') + '</span>' +
+      '<span class="wmain">' +
+        '<b class="wja" lang="ja">' + w.ja + '</b>' +
+        (w.kana ? '<span class="wkana" lang="ja">' + w.kana + '</span>' : '') +
+      '</span>' +
+      '<span class="wbad">错 ' + bad + ' 次</span>' +
+    '</button>';
+  }).join('');
+}
+
+// 点某个词 → 直接单练这一个（队列只有一个元素，走的是同一条 SRS/同步路径）
+$('weakList').addEventListener('click', function(e){
+  const btn = e.target.closest('.wrow');
+  if(!btn) return;
+  const w = WORDS[+btn.dataset.i];
+  if(!w) return;
+  startQueue([w], 'weak-one');
+});
+
+/* ---------- 中途退出：页内确认条（不用 confirm） ---------- */
+$('btnQuit').onclick = function(){
+  const box = $('quitNote');
+  if(!box) return;
+  if(!box.hidden){ box.hidden = true; return; }   // 再点一次收起
+  const total = queue.length, done = Math.min(idx, total);
+  $('quitTxt').textContent = '本轮已记录 ' + done + ' 个词，还剩 ' + Math.max(0, total - done) + ' 个';
+  box.hidden = false;
+};
+$('btnQuitNo').onclick = function(){ $('quitNote').hidden = true; };
+$('btnQuitYes').onclick = function(){
+  $('quitNote').hidden = true;
+  setView('list');
+  refreshDash();                                  // 回到列表，今日数与弱项榜重新算
+};
+$('flip').onclick = ()=> setFlip(!flipped, true);
+$('btnYes').onclick = ()=> review(true);
+$('btnNo').onclick = ()=> review(false);
+$('speak').onclick = e=>{
+  e.stopPropagation();
+  const w = queue[idx];
+  if(!w) return;
+  const text = w.ja.replace(/（.*?）/g,'').replace(/〜/g,'');
+  if(window.JPVoice){ JPVoice.speak(text); return; }
+  if(!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang='ja-JP'; u.rate=.85;
+  speechSynthesis.speak(u);
+};
+$('btnAgain').onclick = ()=>{
+  if(!wrongList.length) return;
+  queue = wrongList.slice(); idx = 0; okCount = 0; wrongList = []; seenCount = new Map();
+  setView('stage');
+  render();
+};
+$('btnRestart').onclick = ()=> startGame('due');
+$('btnHome').onclick = ()=>{ location.href='index.html'; };
+// ===== 跨设备同步：把进度压进链接 hash =====
+const D0 = Date.UTC(2026, 0, 1);
+const SYNC_KEY = 'jp_srs_synced_at';
+
+function encodeProgress(){
+  const parts = [];
+  WORDS.forEach((w, i)=>{
+    const r = SRS[w.ja];
+    if(!r || !r.n) return;
+    const day = Math.max(0, Math.round((r.due - D0) / DAY));
+    parts.push(i.toString(36) + '.' + Math.min(r.s || 0, 3) + '.' + day.toString(36));
+  });
+  return '1.' + parts.join(',');
+}
+
+// 合并策略：同一词取"到期时间更晚"的那份，避免旧链接把新进度冲掉
+function decodeProgress(raw){
+  let str = String(raw || '').trim();
+  const hi = str.indexOf('p=');
+  if(hi >= 0) str = str.slice(hi + 2);
+  str = str.split('&')[0].replace(/^1\./, '');
+  if(!str) return 0;
+  let applied = 0;
+  str.split(',').forEach(t=>{
+    const p = t.split('.');
+    if(p.length < 3) return;
+    const i = parseInt(p[0], 36);
+    const sk = parseInt(p[1], 10);
+    const d = parseInt(p[2], 36);
+    if(!(i >= 0 && i < WORDS.length) || isNaN(sk) || isNaN(d)) return;
+    const due = D0 + d * DAY;
+    const old = SRS[WORDS[i].ja];
+    if(old && old.n && old.due > due) return;   // 本地更新，保留本地
+    SRS[WORDS[i].ja] = {s: Math.min(sk, 3), due: due, n: 1, bad: 0};
+    applied++;
+  });
+  return applied;
+}
+
+function syncUrl(){
+  return location.origin + location.pathname + location.search + '#p=' + encodeProgress();
+}
+
+function copyText(txt){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(txt);
+  }
+  return new Promise((res, rej)=>{
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand('copy'); res(); }catch(e){ rej(e); }
+    document.body.removeChild(ta);
+  });
+}
+
+// 同步相关的反馈一律走页内文字（无 alert / prompt）
+function syncMsg(txt, kind){
+  const el = $('syncMsg');
+  if(!el) return;
+  el.textContent = txt || '';
+  el.className = 'smsg' + (txt ? (kind === 'ok' ? ' ok' : ' bad') : '');
+}
+
+function showSyncInfo(){
+  const ts = Number(localStorage.getItem(SYNC_KEY) || 0);
+  const learned = WORDS.filter(w=>rec(w).n > 0).length;
+  $('syncInfo').textContent = learned
+    ? `本机已记录 ${learned} 个词的状态` + (ts ? ` · 上次同步 ${new Date(ts).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}` : '')
+    : '本机还没有学习记录';
+}
+
+$('btnCopyLink').onclick = async ()=>{
+  const url = syncUrl();
+  try{
+    await copyText(url);
+    localStorage.setItem(SYNC_KEY, String(Date.now()));
+    showSyncInfo();
+    syncMsg('同步链接已复制。发给自己，在另一台设备打开即可导入。', 'ok');
+  }catch(e){
+    const ta = $('importArea');
+    ta.value = url; ta.focus(); ta.select();
+    syncMsg('自动复制失败：长按下面框里的文字手动复制。', 'bad');
+  }
+};
+
+$('btnImport').onclick = ()=>{
+  const raw = $('importArea').value.trim();
+  if(!raw){ syncMsg('先把同步链接或同步码粘贴到上面的框里。', 'bad'); return; }
+  const n = decodeProgress(raw);
+  if(!n){ syncMsg('这段内容里没有可用的进度，或者本机记录已经比它新。', 'bad'); return; }
+  saveSRS();
+  localStorage.setItem(SYNC_KEY, String(Date.now()));
+  $('importArea').value = '';
+  refreshDash(); showSyncInfo();
+  syncMsg('已导入 ' + n + ' 个词的学习状态。', 'ok');
+};
+
+// 打开带 #p= 的链接时自动导入
+try{
+  if(location.hash.indexOf('p=') >= 0){
+    const n = decodeProgress(location.hash);
+    if(n){
+      saveSRS();
+      localStorage.setItem(SYNC_KEY, String(Date.now()));
+      history.replaceState(null, '', location.pathname + location.search);
+      setTimeout(()=>{
+        const dd = $('ddSync'); if(dd) dd.open = true;
+        refreshDash(); showSyncInfo();
+        syncMsg('已从链接导入 ' + n + ' 个词的学习进度。', 'ok');
+      }, 100);
+    }
+  }
+}catch(e){}
+
+// 清空进度：页内二次确认（写明云端也会删）
+$('btnReset').onclick = ()=>{
+  $('resetConfirm').hidden = false;
+  $('btnReset').hidden = true;
+};
+$('btnResetNo').onclick = ()=>{
+  $('resetConfirm').hidden = true;
+  $('btnReset').hidden = false;
+};
+$('btnResetYes').onclick = async ()=>{
+  SRS = {}; saveSRS(); refreshDash();
+  try{ await deleteCloud(); }catch(e){}
+  $('resetConfirm').hidden = true;
+  $('btnReset').hidden = false;
+  syncMsg('已清空：本机与云端的进度都删掉了。', 'ok');
+};
+
+
+// ===================== 云同步 =====================
+let cloudUser = null;
+
+// 状态行三态：已同步（透明点）/ 未登录（灰点）/ 失败（红点）
+function statusSet(kind, txt, act){
+  const dot = $('abDot'), t = $('abTxt'), a = $('statusAct');
+  if(t && txt) t.textContent = txt;
+  if(a && act) a.textContent = act;
+  if(dot) dot.className = 'ab-dot' + (kind === 'err' ? ' err' : (kind === 'synced' ? '' : ' on'));
+}
+
+function abMsg(txt, kind){
+  const el = $('abErr');
+  if(!el) return;
+  el.textContent = txt || '';
+  el.className = 'ab-err' + (txt ? (kind === 'ok' ? ' ok' : ' bad') : '');
+}
+const statusFail = ()=> statusSet('err', '没能存到云端，进度已在这台手机保存', '管理');
+
+// 账户面板：原位展开 / 收起（不是弹层）
+function toggleAcct(force){
+  const panel = $('acctPanel');
+  if(!panel) return;
+  const open = (typeof force === 'boolean') ? force : panel.hidden;
+  panel.hidden = !open;
+  $('statusBar').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+$('statusBar').onclick = ()=> toggleAcct();
+$('btnAcct').onclick = ()=>{
+  const dd = $('ddSync'); if(dd) dd.open = false;
+  toggleAcct(true);
+  const panel = $('acctPanel');
+  if(panel && panel.scrollIntoView) panel.scrollIntoView({block:'nearest'});
+};
+// 语音设置的入口由 voice.js 挂进 [data-voice-slot]（进度与同步 → 朗读），本页不再自建按钮
+
+function renderAuth(st){
+  const authed = !!(st && st.session);
+  const who = $('acctWho'), line = $('acctLine');
+  if(authed){
+    const name = (st.user && (st.user.name || st.user.phone || st.user.email)) || '已登录';
+    if(who) who.textContent = '已登录：' + name;
+    if(line) line.textContent = '已登录：' + name + ' · 进度自动同步到云端';
+    statusSet('synced', '已同步 · 刚刚', '管理');
+    $('abPhone').style.display = 'none';
+    $('btnSignOut').style.display = 'inline-flex';
+    $('btnAcct').textContent = '管理账户 / 退出登录';
+  }else{
+    const err = st && st.error;
+    if(who) who.textContent = '未登录 · 进度只在这台手机';
+    if(line) line.textContent = err ? '没能连上云端 · 进度已在这台手机保存' : '未登录 · 进度只在这台手机';
+    statusSet(err ? 'err' : 'idle',
+      err ? '没能存到云端，进度已在这台手机保存' : '未登录 · 进度只在这台手机',
+      err ? '管理' : '登录');
+    $('abPhone').style.display = 'flex';
+    $('btnSignOut').style.display = 'none';
+    $('btnAcct').textContent = '登录 / 管理账户';
+    if(err) abMsg(err, 'err');
+  }
+}
+
+async function pullCloud(){
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client || !st.session) return;
+  try{
+    const { data, error } = await st.client.database
+      .from('study_progress')
+      .select('word_key,streak,due_at,reviews,bad');
+    if(error) throw error;
+    let applied = 0;
+    (data || []).forEach(row=>{
+      const due = new Date(row.due_at).getTime();
+      const old = SRS[row.word_key];
+      const cloudBad = row.bad | 0;               // 累计答错次数，只增不减
+      if(old && old.n && old.due > due){
+        // 进度以本地为准，但 bad 是累计计数：取大值，避免来回覆盖变小
+        if(cloudBad > (old.bad || 0)){ old.bad = cloudBad; applied++; }
+        return;
+      }
+      SRS[row.word_key] = {
+        s: Math.min(row.streak | 0, 3),
+        due: due,
+        n: Math.max(row.reviews | 0, 1),
+        bad: Math.max((old && old.bad) || 0, cloudBad)   // pullCloud：Math.max 合并
+      };
+      applied++;
+    });
+    if(applied){ saveSRS(); refreshDash(); }
+    statusSet('synced', '已同步 · 刚刚', '管理');
+    abMsg(applied ? '已从云端同步 ' + applied + ' 个词' : '云端已是最新', 'ok');
+  }catch(e){
+    abMsg('云端读取失败：' + (e && e.message ? e.message : e), 'err');
+    statusFail();
+  }
+}
+
+// 把本机所有已学过的词一次性写回云端（合并后的结果）
+async function pushAllLocal(){
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client || !st.session) return 0;
+  const rows = WORDS.filter(function(w){ return (SRS[w.ja] || {}).n > 0; }).map(function(w){
+    const r = SRS[w.ja];
+    return {
+      word_key: w.ja,
+      streak: r.s | 0,
+      due_at: new Date(r.due).toISOString(),
+      reviews: r.n | 0,
+      bad: r.bad || 0,                                   // 登录后整批上传也要带上 bad，否则会丢
+      updated_at: new Date().toISOString()
+    };
+  });
+  if(!rows.length) return 0;
+  try{
+    const { error } = await st.client.database
+      .from('study_progress')
+      .upsert(rows, { onConflict: 'owner_id,word_key' });
+    if(error) throw error;
+    return rows.length;
+  }catch(e){
+    abMsg('上传本机进度失败：' + (e && e.message ? e.message : e), 'err');
+    statusFail();
+    return 0;
+  }
+}
+
+async function pushWord(w){
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client || !st.session) return;
+  const r = SRS[w.ja];
+  if(!r) return;
+  try{
+    const { error } = await st.client.database.from('study_progress').upsert({
+      word_key: w.ja,
+      streak: r.s | 0,
+      due_at: new Date(r.due).toISOString(),
+      reviews: r.n | 0,
+      bad: r.bad || 0,                                   // pushWord：带上累计答错次数
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'owner_id,word_key' });
+    if(error) throw error;
+    statusSet('synced', '已同步 · 刚刚', '管理');
+    abMsg('已同步到云端', 'ok');
+  }catch(e){
+    abMsg('同步失败（进度仍保存在本机）：' + (e && e.message ? e.message : e), 'err');
+    statusFail();
+  }
+}
+
+async function deleteCloud(){
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client || !st.session) return;
+  try{
+    const keys = WORDS.map(function(w){ return w.ja; });
+    const { error } = await st.client.database.from('study_progress').delete().in('word_key', keys);
+    if(error) throw error;
+    abMsg('已清空云端记录', 'ok');
+  }catch(e){
+    abMsg('云端清空失败：' + (e && e.message ? e.message : e), 'err');
+    statusFail();
+  }
+}
+
+// ---- 登录入口 ----
+let pendingOtp = null;
+
+$('btnSendCode').onclick = async function(){
+  const phone = $('phoneInput').value.trim();
+  if(!/^1\d{10}$/.test(phone)){ abMsg('手机号要是 11 位', 'err'); return; }
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client){ abMsg('云服务还在加载，稍等几秒再试', 'err'); return; }
+  this.disabled = true;
+  try{
+    const otp = await st.client.auth.signInWithOtp({ phone: phone });
+    if(otp.error){ abMsg(otp.error.message || '验证码发送失败', 'err'); return; }
+    pendingOtp = otp.data;
+    $('codeInput').focus();
+    abMsg('验证码已发出，60 秒后可重发', 'ok');
+  }catch(e){
+    abMsg('发送失败：' + (e && e.message ? e.message : e), 'err');
+  }finally{
+    this.disabled = false;
+  }
+};
+
+$('btnVerify').onclick = async function(){
+  const token = $('codeInput').value.trim();
+  if(!pendingOtp){ abMsg('请先获取验证码', 'err'); return; }
+  if(!token){ abMsg('请输入短信验证码', 'err'); return; }
+  const st = window.JPCloud && JPCloud.state;
+  if(!st || !st.client){ abMsg('云服务还在加载，稍等几秒再试', 'err'); return; }
+  this.disabled = true;
+  try{
+    const done = await pendingOtp.verify({ token: token });
+    if(done.error){ abMsg(done.error.message || '验证码校验失败', 'err'); return; }
+    pendingOtp = null;
+    $('abPhone').style.display = 'none';
+    $('codeInput').value = '';
+    const s2 = await st.client.auth.getSession();
+    const sess = (s2 && s2.data) || done.data;
+    JPCloud.state.session = sess;
+    JPCloud.state.user = sess && sess.user;
+    renderAuth({ session: sess, user: sess && sess.user, client: st.client, ready: true });
+    await pullCloud();
+    const pushed = await pushAllLocal();
+    if(pushed) abMsg('已登录，并从本机上传 ' + pushed + ' 个词的进度', 'ok');
+  }catch(e){
+    abMsg('登录失败：' + (e && e.message ? e.message : e), 'err');
+  }finally{
+    this.disabled = false;
+  }
+};
+
+$('btnSignOut').onclick = async function(){
+  const st = window.JPCloud && JPCloud.state;
+  if(st && st.client){
+    try{ await st.client.auth.signOut(); }catch(e){}
+  }
+  if(window.JPCloud){ JPCloud.state.session = null; JPCloud.state.user = null; }
+  renderAuth({ session: null, user: null });
+  abMsg('已退出登录，进度仍保存在本机', 'ok');
+};
+
+// 监听云服务状态
+if(window.JPCloud){
+  JPCloud.onChange(function(st){
+    renderAuth(st);
+    if(st && st.session && st.ready && st.session !== cloudUser){
+      cloudUser = st.session;
+      pullCloud();
+    }
+    if(st && !st.session) cloudUser = null;
+  });
+}else{
+  // cloud.js 没加载成功：状态行不能一直停在「检查中…」
+  statusSet('idle', '未登录 · 进度只在这台手机', '登录');
+}
+
+refreshDash();
+showSyncInfo();
+
+// 从课文页进入：?set=a1..a5 直接开始该篇
+const ARTICLES = {a1:'vending-machines.html', a2:'new-year.html', a3:'onsen.html', a4:'konbini.html', a5:'train.html'};
+const NAMES = {a1:'生活 01 · 自動販売機', a2:'文化 02 · お正月', a3:'文化 03 · 温泉', a4:'生活 04 · コンビニ', a5:'生活 05 · 電車のマナー'};
+try{
+  const set = new URLSearchParams(location.search).get('set');
+  if(set && ARTICLES[set]){
+    const back = document.querySelector('.back');
+    if(back){ back.href = ARTICLES[set]; back.setAttribute('aria-label', '返回课文'); }
+    document.querySelector('.title').textContent = '复习 · ' + NAMES[set];
+    startGame(set);
+  }
+}catch(e){}
+</script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>日本のお正月｜日语初级阅读·文化篇</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
+   R1 全页唯一 --brand 实底 = 底部 CTA。R6 本页无投影（卡片一律 1px --line + 留白分层）。
+   篇色只出现在 3 个合法位置：封面 3px 顶线 / 吸顶条印章 / 文化 fact 3px 左竖线。
+   骨架顺序（其余 4 篇同构）：.cover → .tabbar → #text/#vocab/#grammar/#culture → .cta */
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-zh);
+  font-size:15px;
+  line-height:1.75;
+  padding:var(--s5) var(--s4) calc(var(--s14) + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:640px;margin:0 auto;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+/* 注音：340 以下放大一点点，避免"有注音的行看起来更高" */
+rt{font-size:.6em;line-height:1.1;color:var(--text-soft);}
+@media (max-width:340px){ rt{font-size:.62em;} }
+
+/* ---------- 封面 ---------- */
+header.cover{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-top:3px solid var(--piece);      /* R5 位置② */
+  border-radius:var(--r-card);
+}
+h1.ja{margin:0;font-family:var(--font-ja);font-size:clamp(1.5rem,7.8vw,2rem);font-weight:700;line-height:1.35;letter-spacing:.01em;}
+h1.ja rt{font-size:.5em;}
+.meta{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3);}
+.tag{padding:2px var(--s2);border-radius:var(--r-pill);background:var(--inset);color:var(--text-soft);font-size:12px;}
+.lead{
+  margin:var(--s3) 0 0;font-size:15px;line-height:1.7;color:var(--text-soft);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ---------- 吸顶 tab（top 与 padding-top 双写：条的底色必须盖住刘海区）---------- */
+.tabbar{
+  position:sticky;
+  top:env(safe-area-inset-top,0px);
+  padding-top:env(safe-area-inset-top,0px);
+  z-index:20;
+  display:flex;align-items:center;gap:var(--s2);
+  min-height:52px;                      /* 不用 height：padding 会撑高 */
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.back{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:var(--r-pill);
+  border:1px solid var(--line-control);background:var(--card);
+  color:var(--text-soft);font-size:18px;line-height:1;text-decoration:none;
+}
+.stamp{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--r-tag);
+  background:var(--piece);color:var(--on-fill);
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+/* 激活态＝2px --ink 下划线 + ink/600；未激活 text-soft/400。全条唯一有色元素是印章（无 brand） */
+.tabbar [role="tab"]{
+  position:relative;flex:1;min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin:0;padding:0 var(--s1);
+  border:0;background:none;cursor:pointer;
+  font-family:var(--font-zh);font-size:13px;font-weight:400;color:var(--text-soft);
+}
+.tabbar [role="tab"]::after{
+  content:"";position:absolute;left:var(--s2);right:var(--s2);bottom:0;height:2px;background:transparent;
+}
+.tabbar [role="tab"][aria-selected="true"]{color:var(--ink);font-weight:600;}
+.tabbar [role="tab"][aria-selected="true"]::after{background:var(--ink);}
+
+/* ---------- 4 个切面 ---------- */
+.panel{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  scroll-margin-top:calc(52px + env(safe-area-inset-top,0px));
+}
+/* 无 JS 时 data-tabs 不存在 → 4 区全可见；JS 一进来就把它挂上，避免"先渲染 #text 再跳" */
+html[data-tabs="on"] .panel{display:none;}
+html[data-tabs="on"] .panel.active{display:block;}
+.panel h2{
+  margin:0 0 var(--s3);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);
+  font-size:17px;font-weight:700;line-height:1.4;
+}
+
+/* ---------- 工具行 ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);margin-bottom:var(--s3);}
+.tbtn{
+  min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.tbtn:active{background:var(--inset);}
+.tbtn.on{background:var(--ink);border-color:var(--ink);color:var(--on-fill);}
+/* 语音入口在工具行里当一个 pill 用（voice.js 注入的 .jpv-entry 默认是整行按钮） */
+.toolbar [data-voice-slot]{flex:0 1 auto;min-width:0;}
+.toolbar .jpv-entry{width:auto;padding:0 var(--s4);border-radius:var(--r-pill);}
+
+/* ---------- 课文：24px 序号槽 + 正文 + 44px 朗读 ---------- */
+.sent{
+  display:grid;grid-template-columns:24px 1fr 44px;column-gap:var(--s2);
+  align-items:start;padding:var(--s2) 0;
+  border-bottom:1px solid var(--line);
+}
+.sent:last-child{border-bottom:0;}
+/* 序号与首行基线对齐（无 token 可用的光学值，改字号时一起调） */
+.sn{padding-top:9px;font-size:11.5px;line-height:1;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.jp{margin:0;font-family:var(--font-ja);font-size:1.125rem;line-height:1.9;letter-spacing:.01em;}
+@media (min-width:375px){ .jp{font-size:1.25rem;} }
+.ro{margin:var(--s1) 0 0;font-size:12.5px;line-height:1.6;color:var(--text-soft);}
+.zh{margin:var(--s1) 0 0;font-size:14px;line-height:1.7;color:var(--text-soft);}
+/* 逐句「译」：44×44 热区、视觉 28px 胶囊；负上下 margin 让 1 行句子的行高不被撑开 */
+.zh-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:44px;min-height:44px;margin:-7px -4px -7px var(--s2);padding:0;
+  border:0;background:none;cursor:pointer;vertical-align:middle;font-family:inherit;
+}
+.zh-toggle .chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border:1px solid var(--text-soft);border-radius:var(--r-pill);
+  background:var(--card);color:var(--text-soft);
+  font-size:12px;font-weight:600;line-height:1;
+}
+.zh-toggle[aria-expanded="true"] .chip{border-color:var(--ink);color:var(--ink);}
+.snd{
+  width:44px;height:44px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);cursor:pointer;
+}
+.snd:active{background:var(--inset);}
+.snd svg{width:18px;height:18px;fill:var(--ink);}
+
+/* ---------- 词汇：≤400 一律 2 行式（第 1 行词+假名+罗马音，第 2 行释义满宽）---------- */
+.vocab{list-style:none;margin:0;padding:0;}
+.v-row{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.v-row:last-child{border-bottom:0;}
+.v-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);}
+.v-w{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.v-k{font-family:var(--font-ja);font-size:13px;color:var(--text-soft);}
+.v-r{font-size:12px;color:var(--text-muted);}
+.v-ref{margin-left:auto;font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.v-m{margin-top:var(--s1);font-size:14px;line-height:1.7;color:var(--text-soft);}
+mark{background:var(--mark);color:var(--ink);padding:0 3px;border-radius:var(--r-tag);}
+
+/* ---------- 语法 ---------- */
+.g-item{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.g-item:last-child{border-bottom:0;}
+.g-form{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.g-lesson{
+  display:inline-block;margin-left:var(--s2);padding:1px var(--s2);
+  border-radius:var(--r-tag);background:var(--inset);color:var(--text-soft);
+  font-size:12px;font-weight:400;vertical-align:middle;
+}
+.g-ex{margin-top:var(--s1);font-size:14px;line-height:1.75;color:var(--text-soft);}
+
+/* ---------- 文化：fact 只保留 3px 篇色左竖线，底透明 ---------- */
+.fact{margin-top:var(--s3);padding-left:var(--s3);border-left:3px solid var(--piece);font-size:14px;line-height:1.75;color:var(--text-soft);}
+.fact b{color:var(--ink);}
+.src{margin-top:var(--s4);font-size:12px;color:var(--text-soft);}
+.src summary{display:flex;align-items:center;gap:var(--s1);min-height:44px;font-weight:600;list-style:none;cursor:pointer;}
+.src summary::-webkit-details-marker{display:none;}
+.src[open] .chev{transform:rotate(90deg);}
+.src p{margin:var(--s1) 0 0;line-height:1.7;}
+.chev{color:var(--text-muted);font-size:13px;line-height:1;}
+
+/* ---------- 底部 CTA：全页唯一 --brand 实底 ---------- */
+.cta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:var(--s4);
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.cta-body{flex:1;min-width:160px;}
+.cta-t{font-size:15px;font-weight:700;}
+.cta-s{margin-top:2px;font-size:13px;color:var(--text-soft);}
+.cta-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;padding:0 var(--s4);white-space:nowrap;
+  background:var(--brand);color:var(--on-fill);
+  border-radius:var(--r-ctl);
+  font-size:14px;font-weight:600;text-decoration:none;
+}
+.cta-btn:active{background:var(--brand-press);}
+
+@media (max-width:360px){
+  .tabbar{gap:var(--s1);}
+  .panel,header.cover,.cta{padding:var(--s4);}
+}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto !important;}
+}
+</style>
+</head>
+<body>
+<!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
+<script>document.documentElement.setAttribute('data-tabs','on');</script>
+
+<div class="wrap" data-piece="a2">
+
+  <header class="cover">
+    <h1 class="ja" lang="ja"><ruby>日本<rt>にほん</rt></ruby>のお<ruby>正月<rt>しょうがつ</rt></ruby></h1>
+    <div class="meta">
+      <span class="tag">15 句 · 全假名注音</span>
+      <span class="tag">大家的日本语 第1–14课语法</span>
+    </div>
+    <p class="lead">1 月 1 日到 3 日，日本几乎整个国家停下来。人们寄贺年卡、吃有讲究的年菜、去神社做一年的第一次参拜，孩子还能拿到压岁钱。这篇用初级语法带你看懂这个最重要的节日。</p>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="文章分区">
+    <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
+    <span class="stamp" aria-hidden="true">02</span>
+    <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
+    <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
+    <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
+    <button role="tab" aria-selected="false" aria-controls="culture" id="tab-culture" tabindex="-1">文化</button>
+  </nav>
+
+  <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
+    <h2>课文</h2>
+    <div class="toolbar">
+      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
+      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <span data-voice-slot></span>
+    </div>
+    <div id="article"></div>
+  </section>
+
+  <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
+    <h2>词汇表</h2>
+    <ul class="vocab" id="vocabList"></ul>
+  </section>
+
+  <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
+    <h2>语法点（对标《大家的日本语》）</h2>
+    <div class="g-item">
+      <span class="g-form">〜から〜まで</span><span class="g-lesson">第4课</span>
+      <div class="g-ex">表示时间范围：<ruby>一月一日<rt>いちがつついたち</rt></ruby><b>から</b><ruby>三日<rt>みっか</rt></ruby><b>まで</b>、休みです。（从 1 月 1 日到 3 日放假。）</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜も〜も</span><span class="g-lesson">第3课</span>
+      <div class="g-ex">"既……也……"：学校<b>も</b>会社<b>も</b>休みです。（学校、公司都放假。）</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">时间名词 ＋ に</span><span class="g-lesson">第4课</span>
+      <div class="g-ex">具体时间点加「に」：<ruby>十二月<rt>じゅうにがつ</rt></ruby><b>に</b>、<ruby>年賀状<rt>ねんがじょう</rt></ruby>を送ります。（在 12 月寄贺年卡。）</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜と　一緒に</span><span class="g-lesson">第6课</span>
+      <div class="g-ex">和某人一起：<ruby>家族<rt>かぞく</rt></ruby><b>と一緒に</b>ご飯を食べます。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">な形容词：大切な</span><span class="g-lesson">第10课</span>
+      <div class="g-ex">接名词要加「な」：とても<b>大切な</b>日（非常重要的日子）；作谓语则不加：大切です。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜へ　行きます</span><span class="g-lesson">第5课</span>
+      <div class="g-ex">「へ」表示移动方向：<ruby>神社<rt>じんじゃ</rt></ruby><b>へ</b>行きます。（去神社。）</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜で（动作发生的场所）</span><span class="g-lesson">第6课</span>
+      <div class="g-ex">神社<b>で</b>お願いします = 在神社祈愿。注意「に」是存在场所、「で」是动作场所。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜を　もらいます</span><span class="g-lesson">第7课</span>
+      <div class="g-ex">从别人那里收到：お<ruby>年玉<rt>としだま</rt></ruby><b>を</b>もらいます。（收到压岁钱。）</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜たいです</span><span class="g-lesson">第11课</span>
+      <div class="g-ex">表达愿望：料理を作り<b>たいです</b>。（想做饭。）接续：ます形去掉ます＋たい。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
+    <h2>文化小知识</h2>
+    <div class="fact">
+      🎍 <b>お正月＝三が日</b>：1 月 1 日到 3 日。这三天大部分公司、店铺休息，日本人回老家和家人团聚，是全年最重要的假期。
+    </div>
+    <div class="fact">
+      🍱 <b>おせち料理每道菜都有寓意</b>：黑豆（くろまめ）＝「まめに働く」，健康勤劳；数の子（鲱鱼籽，卵多）＝子孙繁荣；伊達巻（蛋卷）＝学业有成；海老（虾，弯背像老人）＝长寿。年菜提前做好，正月三天不开火，让做饭的人也能休息。
+    </div>
+    <div class="fact">
+      ⛩️ <b>初詣（はつもうで）</b>：新年第一次去神社或寺院参拜。仅东京明治神宫，三天就约 <b>300 万人</b>参拜；全国三が日合计超过 <b>8000 万人</b>。参拜礼法是「二礼二拍手一礼」。
+    </div>
+    <div class="fact">
+      💌 <b>年賀状与お年玉</b>：12 月给亲友寄贺年卡，1 月 1 日集中送到；孩子们从长辈那里拿到「お年玉」（压岁钱）。
+    </div>
+    <details class="src">
+      <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
+      <p>JAPN《Japanese New Year Traditions: Osechi, Hatsumode and Customs》（初詣人数、年菜寓意）；Japan Ryokan Guide《日本新年最佳旅馆》（明治神宫三天约 300 万人、二礼二拍手一礼）；央视网《日本：百年不变的新年贺年卡情结》（年菜寓意与门松习俗）。本页日文课文为原创编写，仅使用上述公开文化事实。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <div class="cta-body">
+      <div class="cta-t">读完测一下</div>
+      <div class="cta-s">お正月这 15 个词，翻卡自测，只看这一篇。</div>
+    </div>
+    <a class="cta-btn" href="review.html?set=a2">测这 15 个词 →</a>
+  </div>
+
+</div>
+
+<script src="voice.js"></script>
+<script>
+const SENTS = [
+  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>は、<ruby>日本<rt>にほん</rt></ruby>でとても<ruby>大切<rt>たいせつ</rt></ruby>な<ruby>日<rt>ひ</rt></ruby>です。',
+   ro:'Ichigatsu tsuitachi wa, Nihon de totemo taisetsu na hi desu.',
+   zh:'1 月 1 日，在日本是非常重要的日子。',
+   plain:'一月一日は、日本でとても大切な日です。'},
+  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>から<ruby>三日<rt>みっか</rt></ruby>まで、<ruby>学校<rt>がっこう</rt></ruby>も<ruby>会社<rt>かいしゃ</rt></ruby>も<ruby>休<rt>やす</rt></ruby>みです。',
+   ro:'Ichigatsu tsuitachi kara mikka made, gakkō mo kaisha mo yasumi desu.',
+   zh:'从 1 月 1 日到 3 日，学校和公司都放假。',
+   plain:'一月一日から三日まで、学校も会社も休みです。'},
+  {jp:'<ruby>十二月<rt>じゅうにがつ</rt></ruby>に、<ruby>家族<rt>かぞく</rt></ruby>や<ruby>友<rt>とも</rt></ruby>だちに<ruby>年賀状<rt>ねんがじょう</rt></ruby>を<ruby>送<rt>おく</rt></ruby>ります。',
+   ro:'Jūnigatsu ni, kazoku ya tomodachi ni nengajō o okurimasu.',
+   zh:'12 月，给家人和朋友寄贺年卡。',
+   plain:'十二月に、家族や友だちに年賀状を送ります。'},
+  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>に、<ruby>家族<rt>かぞく</rt></ruby>と<ruby>一緒<rt>いっしょ</rt></ruby>にご<ruby>飯<rt>はん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。',
+   ro:'Ichigatsu tsuitachi ni, kazoku to issho ni gohan o tabemasu.',
+   zh:'1 月 1 日，和家人一起吃饭。',
+   plain:'一月一日に、家族と一緒にご飯を食べます。'},
+  {jp:'この<ruby>日<rt>ひ</rt></ruby>の<ruby>料理<rt>りょうり</rt></ruby>は「おせち<ruby>料理<rt>りょうり</rt></ruby>」です。',
+   ro:'Kono hi no ryōri wa "osechi-ryōri" desu.',
+   zh:'这一天的饭菜叫「御节料理」（年菜）。',
+   plain:'この日の料理は「おせち料理」です。'},
+  {jp:'おせち<ruby>料理<rt>りょうり</rt></ruby>の<ruby>一<rt>ひと</rt></ruby>つ<ruby>一<rt>ひと</rt></ruby>つに、<ruby>意味<rt>いみ</rt></ruby>があります。',
+   ro:'Osechi-ryōri no hitotsu hitotsu ni, imi ga arimasu.',
+   zh:'御节料理的每一样菜都有含义。',
+   plain:'おせち料理の一つ一つに、意味があります。'},
+  {jp:'<ruby>黒豆<rt>くろまめ</rt></ruby>は、まめに<ruby>働<rt>はたら</rt></ruby>くという<ruby>意味<rt>いみ</rt></ruby>です。',
+   ro:'Kuromame wa, mame ni hataraku to iu imi desu.',
+   zh:'黑豆是「勤快工作」的意思。',
+   plain:'黒豆は、まめに働くという意味です。'},
+  {jp:'<ruby>数<rt>かず</rt></ruby>の<ruby>子<rt>こ</rt></ruby>は、<ruby>子<rt>こ</rt></ruby>どもがたくさんという<ruby>意味<rt>いみ</rt></ruby>です。',
+   ro:'Kazunoko wa, kodomo ga takusan to iu imi desu.',
+   zh:'鲱鱼籽是「多子多孙」的意思。',
+   plain:'数の子は、子どもがたくさんという意味です。'},
+  {jp:'<ruby>一月<rt>いちがつ</rt></ruby>に、たくさんの<ruby>人<rt>ひと</rt></ruby>が<ruby>神社<rt>じんじゃ</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きます。',
+   ro:'Ichigatsu ni, takusan no hito ga jinja e ikimasu.',
+   zh:'1 月，很多人去神社。',
+   plain:'一月に、たくさんの人が神社へ行きます。'},
+  {jp:'それは「<ruby>初詣<rt>はつもうで</rt></ruby>」です。',
+   ro:'Sore wa "hatsumōde" desu.',
+   zh:'这就是「初诣」（新年的第一次参拜）。',
+   plain:'それは「初詣」です。'},
+  {jp:'<ruby>神社<rt>じんじゃ</rt></ruby>で、<ruby>今年<rt>ことし</rt></ruby>の<ruby>健康<rt>けんこう</rt></ruby>と<ruby>幸<rt>しあわ</rt></ruby>せをお<ruby>願<rt>ねが</rt></ruby>いします。',
+   ro:'Jinja de, kotoshi no kenkō to shiawase o onegai shimasu.',
+   zh:'在神社祈愿今年的健康与幸福。',
+   plain:'神社で、今年の健康と幸せをお願いします。'},
+  {jp:'<ruby>子<rt>こ</rt></ruby>どもたちは、お<ruby>年玉<rt>としだま</rt></ruby>をもらいます。',
+   ro:'Kodomo-tachi wa, otoshidama o moraimasu.',
+   zh:'孩子们会收到压岁钱。',
+   plain:'子どもたちは、お年玉をもらいます。'},
+  {jp:'お<ruby>年玉<rt>としだま</rt></ruby>で、お<ruby>菓子<rt>かし</rt></ruby>やゲームを<ruby>買<rt>か</rt></ruby>います。',
+   ro:'Otoshidama de, okashi ya gēmu o kaimasu.',
+   zh:'用压岁钱买点心或游戏。',
+   plain:'お年玉で、お菓子やゲームを買います。'},
+  {jp:'<ruby>日本<rt>にほん</rt></ruby>の<ruby>文化<rt>ぶんか</rt></ruby>は、とても<ruby>面白<rt>おもしろ</rt></ruby>いです。',
+   ro:'Nihon no bunka wa, totemo omoshiroi desu.',
+   zh:'日本的文化非常有趣。',
+   plain:'日本の文化は、とても面白いです。'},
+  {jp:'<ruby>来年<rt>らいねん</rt></ruby>、<ruby>私<rt>わたし</rt></ruby>はお<ruby>正月<rt>しょうがつ</rt></ruby>の<ruby>料理<rt>りょうり</rt></ruby>を<ruby>作<rt>つく</rt></ruby>りたいです。',
+   ro:'Rainen, watashi wa o-shōgatsu no ryōri o tsukuritai desu.',
+   zh:'明年，我想做一次御节料理。',
+   plain:'来年、私はお正月の料理を作りたいです。'}
+];
+
+const VOCAB = [
+  {w:'お正月', k:'おしょうがつ', r:'o-shōgatsu', m:'新年、正月。特指 1 月 1–3 日（三が日），全年最重要的节日。'},
+  {w:'大切（な）', k:'たいせつ', r:'taisetsu', m:'重要的（な形容词）：大切な日。比「大事」更书面、更带感情。'},
+  {w:'休み', k:'やすみ', r:'yasumi', m:'休息、假期。动词形：休みます。'},
+  {w:'年賀状', k:'ねんがじょう', r:'nengajō', m:'贺年卡。12 月寄出，1 月 1 日集中送达，是日本新年的固定仪式。'},
+  {w:'送ります', k:'おくります', r:'okurimasu', m:'寄、送（东西或人）。寄信：手紙を送ります。'},
+  {w:'一緒に', k:'いっしょに', r:'issho ni', m:'一起。前面用「と」表示和谁：家族と一緒に。'},
+  {w:'おせち料理', k:'おせちりょうり', r:'osechi-ryōri', m:'御节料理，正月吃的年菜，装在多层漆盒里，每道菜都有寓意。'},
+  {w:'意味', k:'いみ', r:'imi', m:'意思、含义。「〜の意味です」＝是……的意思。'},
+  {w:'黒豆', k:'くろまめ', r:'kuromame', m:'黑豆。寓意「まめに働く」——健康、勤勉。「まめ」本身就有勤快之意。'},
+  {w:'数の子', k:'かずのこ', r:'kazunoko', m:'鲱鱼籽。因为卵多，寓意子孙繁荣。'},
+  {w:'神社', k:'じんじゃ', r:'jinja', m:'神社。参拜用「お参りします」，祈愿用「お願いします」。'},
+  {w:'初詣', k:'はつもうで', r:'hatsumōde', m:'新年的第一次神社/寺院参拜，通常 1 月 1–3 日。'},
+  {w:'健康', k:'けんこう', r:'kenkō', m:'健康。「健康と幸せ」是初诣时最常说的一句祈愿。'},
+  {w:'お願いします', k:'おねがいします', r:'onegai shimasu', m:'拜托、请求；在神社里就是"祈愿"。这是初级阶段最高频的实用句。'},
+  {w:'お年玉', k:'おとしだま', r:'otoshidama', m:'压岁钱。长辈给孩子，装在「ポチ袋」小信封里。'}
+];
+
+const TABS = ['text','vocab','grammar','culture'];
+const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+
+/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
+function activate(id, silent){
+  if(TABS.indexOf(id) < 0) id = 'text';
+  TABS.forEach(function(p){
+    const sec = document.getElementById(p);
+    const tab = document.getElementById('tab-' + p);
+    const on = (p === id);
+    if(sec) sec.classList.toggle('active', on);
+    if(tab){
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.tabIndex = on ? 0 : -1;
+    }
+  });
+  if(!silent){
+    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
+    try{ history.replaceState(null, '', url); }
+    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
+  }
+  return id;
+}
+
+function currentTab(){
+  for(let i = 0; i < TABS.length; i++){
+    const t = document.getElementById('tab-' + TABS[i]);
+    if(t && t.getAttribute('aria-selected') === 'true') return i;
+  }
+  return 0;
+}
+
+/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
+function revealPanel(sec){
+  if(!sec) return;
+  const top = sec.getBoundingClientRect().top + window.pageYOffset;
+  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
+}
+
+TABS.forEach(function(p){
+  const tab = document.getElementById('tab-' + p);
+  if(!tab) return;
+  tab.addEventListener('click', function(){
+    activate(p);
+    revealPanel(document.getElementById(p));
+  });
+});
+
+document.querySelector('.tabbar').addEventListener('keydown', function(e){
+  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const i = currentTab();
+  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
+  const id = activate(TABS[next]);
+  document.getElementById('tab-' + id).focus();
+  revealPanel(document.getElementById(id));
+});
+
+window.addEventListener('hashchange', function(){
+  const h = (location.hash || '').replace('#', '');
+  if(TABS.indexOf(h) >= 0) activate(h, true);
+});
+
+/* ---------- 课文 ---------- */
+const art = document.getElementById('article');
+SENTS.forEach(function(s, i){
+  const n = i + 1;
+  const div = document.createElement('div');
+  div.className = 'sent';
+  div.innerHTML =
+    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
+    '<div class="s-body">' +
+      '<p class="jp" lang="ja">' + s.jp +
+        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
+          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
+        '</button>' +
+      '</p>' +
+      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
+      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
+    '</div>' +
+    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
+  art.appendChild(div);
+});
+
+/* ---------- 词汇（含"出现在第几句"反查号）---------- */
+function refSentence(w){
+  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
+  if(!key) return 0;
+  for(let i = 0; i < SENTS.length; i++){
+    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
+  }
+  return 0;
+}
+const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
+const vlist = document.getElementById('vocabList');
+VOCAB.forEach(function(v){
+  const ref = refSentence(v.w);
+  const li = document.createElement('li');
+  li.className = 'v-row';
+  li.innerHTML =
+    '<div class="v-top">' +
+      '<b class="v-w" lang="ja">' + v.w + '</b>' +
+      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
+      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
+      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
+    '</div>' +
+    '<div class="v-m">' + v.m + '</div>';
+  vlist.appendChild(li);
+});
+
+/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
+const btnZh = document.getElementById('btnZh');
+const btnRo = document.getElementById('btnRo');
+const zhState = SENTS.map(function(){ return false; });
+
+function setZh(i, on){
+  zhState[i] = on;
+  const box = document.getElementById('zh-' + (i + 1));
+  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
+  if(box) box.hidden = !on;
+  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+}
+function syncMaster(){
+  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
+  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
+  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
+  const any = zhState.some(Boolean);
+  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
+  btnZh.classList.toggle('on', any);
+}
+btnZh.onclick = function(){
+  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
+  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
+  syncMaster();
+};
+
+let roOn = false;
+btnRo.onclick = function(){
+  roOn = !roOn;
+  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
+  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
+  this.classList.toggle('on', roOn);
+};
+
+/* ---------- 朗读 ---------- */
+function speakJa(text, rate){
+  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
+}
+art.addEventListener('click', function(e){
+  const zt = e.target.closest('.zh-toggle');
+  if(zt){
+    const i = +zt.dataset.i;
+    setZh(i, !zhState[i]);
+    syncMaster();          // 逐句联动全局文案
+    return;
+  }
+  const snd = e.target.closest('.snd');
+  if(snd){
+    try{ speechSynthesis.cancel(); }catch(err){}
+    speakJa(SENTS[+snd.dataset.i].plain);
+  }
+});
+
+let playing = false;
+document.getElementById('btnAll').onclick = async function(){
+  if(playing){
+    try{ speechSynthesis.cancel(); }catch(e){}
+    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+    return;
+  }
+  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
+  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
+  for(const s of SENTS){
+    if(!playing) break;
+    await speakJa(s.plain, 0.85);
+    await new Promise(function(r){ setTimeout(r, 500); });
+  }
+  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+};
+
+/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
+(function(){
+  const h = (location.hash || '').replace('#', '');
+  activate(TABS.indexOf(h) >= 0 ? h : 'text');
+})();
+</script>
+</body>
+</html>

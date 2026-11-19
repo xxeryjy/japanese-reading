@@ -1,0 +1,84 @@
+/* 依据 DESIGN-SPEC-japanese-reading.md v1.4 —— 规格升版时必须同步改这一行 */
+/* tokens.css 是全站唯一的色 / 字 / 间距真源：改颜色、字体、间距只改这个文件，页面里不得再出现第二份 :root 基础色。
+   全站唯一允许出现字面色值的地方就是本文件；例外只有两处，都是规范强制要求写字面量的：
+   ① manifest.webmanifest ② 各页 <meta name="theme-color" content="#1f6b63">。除此之外 grep 必须归零。 */
+
+:root{
+  color-scheme: light;
+
+  /* ===== 品牌（R1：每屏只有 1 个实底主行动）===== */
+  --brand:#1f6b63;
+  --brand-hover:#1b6157;       /* 桌面 hover */
+  --brand-press:#1a5a53;       /* 按下 */
+  --brand-tint:#e9f2f0;        /* 品牌浅底：计数 chip / 浅底强调，不得当篇色用 */
+  --on-fill:#ffffff;           /* 全站唯一的白，只用在实底上的文字 / 图标 */
+
+  /* ===== 状态 ok ===== */
+  --ok:#2f6b46;
+  --ok-tint:#eff6f1;
+  --ok-hover:#e5f1e8;          /* 浅底按下 / hover 时加深一档 */
+
+  /* ===== 状态 no（R2：只做文字与描边，永不做实底）===== */
+  --no:#9e2f1b;
+  --no-tint:#fbeeea;
+  --no-hover:#f7e2dc;
+
+  /* ===== 到期 due：今天该处理，和「出错」的 no 区分开 ===== */
+  --due:#8a6316;
+  --due-tint:#fbf3e0;
+
+  /* ===== 文字三级 ===== */
+  --ink:#241f1a;
+  --text-soft:#5f594e;
+  --text-muted:#756d61;        /* 不得压在 --inset / 任何 tint 底上（4.40 < 4.5） */
+
+  /* ===== 面 ===== */
+  --paper:#f7f5ef;
+  --card:#fffefb;
+  --inset:#f2eee4;
+  --fill:#faf8f2;              /* 次级面：原位展开的面板 / 浮层内底 */
+  --mark:#fbecc0;              /* 高亮标记底（原值 #f6f1e3 与纸底 ΔE 仅 7.3，看不见） */
+
+  /* ===== 线：只有三级 ===== */
+  --line:#e6ded0;              /* 1px 分隔线，装饰 */
+  --line-strong:#d5cbb9;       /* 更强的装饰分隔线 */
+  --line-control:#998762;      /* 控件边界（四个表面 3.02–3.47，满足 WCAG 1.4.11） */
+
+  /* ===== 投影：只有 2 类合法用途（R6，按 z 轴位移判定）===== */
+  --shadow-overlay:0 18px 48px rgba(60,45,20,.16);   /* ① 覆盖层 / 浮层 */
+  --shadow-flip:0 6px 20px rgba(60,45,20,.08);       /* ② 翻转词卡 */
+  --shadow-card:var(--shadow-flip);                  /* 别名：仅翻转词卡 .face 使用，普通卡片一律无投影 */
+  --scrim:rgba(36,31,26,.28);                        /* 浮层遮罩，与 --shadow-overlay 配对 */
+
+  /* ===== 篇色（R5：只有 4 个合法位置）===== */
+  --piece-a1:#2d6459; --piece-a1-tint:#ecf9f6;   /* 生活 01 自販機 */
+  --piece-a2:#89483d; --piece-a2-tint:#f9edec;   /* 文化 02 お正月 */
+  --piece-a3:#6f5632; --piece-a3-tint:#f9f3ec;   /* 文化 03 温泉 */
+  --piece-a4:#3a5d80; --piece-a4-tint:#ecf2f9;   /* 生活 04 コンビニ */
+  --piece-a5:#46622c; --piece-a5-tint:#f2f9ec;   /* 生活 05 電車 */
+
+  /* 篇色默认值：漏挂 data-piece 时必须 fail-loud（灰印章白字 5.10 可读，但一眼看出没配对），不得回落品牌绿 */
+  --piece:var(--text-muted);
+  --piece-tint:var(--inset);
+
+  /* ===== 圆角 4 级 ===== */
+  --r-pill:999px;
+  --r-card:14px;
+  --r-ctl:10px;
+  --r-tag:6px;
+
+  /* ===== 间距：编号 = 4 × N（s1=4 … s14=56），只保留实际在用的档，避免 var(--s10) 拿到 56 这类错位 ===== */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px;
+  --s8:32px; --s10:40px; --s14:56px;
+
+  /* ===== 字体三栈：日文与中文必须分开（混合栈会让 Android 日文汉字退化成简体字形）===== */
+  --font-ja:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Yu Gothic UI","Meiryo","Noto Sans JP","Noto Sans CJK JP",sans-serif;
+  --font-zh:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --font-num:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+
+[data-piece="a1"]{ --piece:var(--piece-a1); --piece-tint:var(--piece-a1-tint); }
+[data-piece="a2"]{ --piece:var(--piece-a2); --piece-tint:var(--piece-a2-tint); }
+[data-piece="a3"]{ --piece:var(--piece-a3); --piece-tint:var(--piece-a3-tint); }
+[data-piece="a4"]{ --piece:var(--piece-a4); --piece-tint:var(--piece-a4-tint); }
+[data-piece="a5"]{ --piece:var(--piece-a5); --piece-tint:var(--piece-a5-tint); }

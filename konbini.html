@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>日本のコンビニ｜日语初级阅读·生活篇 04</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
+   R1 全页唯一 --brand 实底 = 底部 CTA。R6 本页无投影（卡片一律 1px --line + 留白分层）。
+   篇色只出现在 3 个合法位置：封面 3px 顶线 / 吸顶条印章 / 文化 fact 3px 左竖线。
+   骨架顺序（其余 4 篇同构）：.cover → .tabbar → #text/#vocab/#grammar/#culture → .cta */
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-zh);
+  font-size:15px;
+  line-height:1.75;
+  padding:var(--s5) var(--s4) calc(var(--s14) + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:640px;margin:0 auto;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+/* 注音：340 以下放大一点点，避免"有注音的行看起来更高" */
+rt{font-size:.6em;line-height:1.1;color:var(--text-soft);}
+@media (max-width:340px){ rt{font-size:.62em;} }
+
+/* ---------- 封面 ---------- */
+header.cover{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-top:3px solid var(--piece);      /* R5 位置② */
+  border-radius:var(--r-card);
+}
+h1.ja{margin:0;font-family:var(--font-ja);font-size:clamp(1.5rem,7.8vw,2rem);font-weight:700;line-height:1.35;letter-spacing:.01em;}
+h1.ja rt{font-size:.5em;}
+.meta{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3);}
+.tag{padding:2px var(--s2);border-radius:var(--r-pill);background:var(--inset);color:var(--text-soft);font-size:12px;}
+.lead{
+  margin:var(--s3) 0 0;font-size:15px;line-height:1.7;color:var(--text-soft);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ---------- 吸顶 tab（top 与 padding-top 双写：条的底色必须盖住刘海区）---------- */
+.tabbar{
+  position:sticky;
+  top:env(safe-area-inset-top,0px);
+  padding-top:env(safe-area-inset-top,0px);
+  z-index:20;
+  display:flex;align-items:center;gap:var(--s2);
+  min-height:52px;                      /* 不用 height：padding 会撑高 */
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.back{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:var(--r-pill);
+  border:1px solid var(--line-control);background:var(--card);
+  color:var(--text-soft);font-size:18px;line-height:1;text-decoration:none;
+}
+.stamp{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--r-tag);
+  background:var(--piece);color:var(--on-fill);
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+/* 激活态＝2px --ink 下划线 + ink/600；未激活 text-soft/400。全条唯一有色元素是印章（无 brand） */
+.tabbar [role="tab"]{
+  position:relative;flex:1;min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin:0;padding:0 var(--s1);
+  border:0;background:none;cursor:pointer;
+  font-family:var(--font-zh);font-size:13px;font-weight:400;color:var(--text-soft);
+}
+.tabbar [role="tab"]::after{
+  content:"";position:absolute;left:var(--s2);right:var(--s2);bottom:0;height:2px;background:transparent;
+}
+.tabbar [role="tab"][aria-selected="true"]{color:var(--ink);font-weight:600;}
+.tabbar [role="tab"][aria-selected="true"]::after{background:var(--ink);}
+
+/* ---------- 4 个切面 ---------- */
+.panel{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  scroll-margin-top:calc(52px + env(safe-area-inset-top,0px));
+}
+/* 无 JS 时 data-tabs 不存在 → 4 区全可见；JS 一进来就把它挂上，避免"先渲染 #text 再跳" */
+html[data-tabs="on"] .panel{display:none;}
+html[data-tabs="on"] .panel.active{display:block;}
+.panel h2{
+  margin:0 0 var(--s3);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);
+  font-size:17px;font-weight:700;line-height:1.4;
+}
+
+/* ---------- 工具行 ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);margin-bottom:var(--s3);}
+.tbtn{
+  min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.tbtn:active{background:var(--inset);}
+.tbtn.on{background:var(--ink);border-color:var(--ink);color:var(--on-fill);}
+/* 语音入口在工具行里当一个 pill 用（voice.js 注入的 .jpv-entry 默认是整行按钮） */
+.toolbar [data-voice-slot]{flex:0 1 auto;min-width:0;}
+.toolbar .jpv-entry{width:auto;padding:0 var(--s4);border-radius:var(--r-pill);}
+
+/* ---------- 课文：24px 序号槽 + 正文 + 44px 朗读 ---------- */
+.sent{
+  display:grid;grid-template-columns:24px 1fr 44px;column-gap:var(--s2);
+  align-items:start;padding:var(--s2) 0;
+  border-bottom:1px solid var(--line);
+}
+.sent:last-child{border-bottom:0;}
+/* 序号与首行基线对齐（无 token 可用的光学值，改字号时一起调） */
+.sn{padding-top:9px;font-size:11.5px;line-height:1;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.jp{margin:0;font-family:var(--font-ja);font-size:1.125rem;line-height:1.9;letter-spacing:.01em;}
+@media (min-width:375px){ .jp{font-size:1.25rem;} }
+.ro{margin:var(--s1) 0 0;font-size:12.5px;line-height:1.6;color:var(--text-soft);}
+.zh{margin:var(--s1) 0 0;font-size:14px;line-height:1.7;color:var(--text-soft);}
+/* 逐句「译」：44×44 热区、视觉 28px 胶囊；负上下 margin 让 1 行句子的行高不被撑开 */
+.zh-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:44px;min-height:44px;margin:-7px -4px -7px var(--s2);padding:0;
+  border:0;background:none;cursor:pointer;vertical-align:middle;font-family:inherit;
+}
+.zh-toggle .chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border:1px solid var(--text-soft);border-radius:var(--r-pill);
+  background:var(--card);color:var(--text-soft);
+  font-size:12px;font-weight:600;line-height:1;
+}
+.zh-toggle[aria-expanded="true"] .chip{border-color:var(--ink);color:var(--ink);}
+.snd{
+  width:44px;height:44px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);cursor:pointer;
+}
+.snd:active{background:var(--inset);}
+.snd svg{width:18px;height:18px;fill:var(--ink);}
+
+/* ---------- 词汇：≤400 一律 2 行式（第 1 行词+假名+罗马音，第 2 行释义满宽）---------- */
+.vocab{list-style:none;margin:0;padding:0;}
+.v-row{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.v-row:last-child{border-bottom:0;}
+.v-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);}
+.v-w{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.v-k{font-family:var(--font-ja);font-size:13px;color:var(--text-soft);}
+.v-r{font-size:12px;color:var(--text-muted);}
+.v-ref{margin-left:auto;font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.v-m{margin-top:var(--s1);font-size:14px;line-height:1.7;color:var(--text-soft);}
+mark{background:var(--mark);color:var(--ink);padding:0 3px;border-radius:var(--r-tag);}
+
+/* ---------- 语法 ---------- */
+.g-item{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.g-item:last-child{border-bottom:0;}
+.g-form{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.g-lesson{
+  display:inline-block;margin-left:var(--s2);padding:1px var(--s2);
+  border-radius:var(--r-tag);background:var(--inset);color:var(--text-soft);
+  font-size:12px;font-weight:400;vertical-align:middle;
+}
+.g-ex{margin-top:var(--s1);font-size:14px;line-height:1.75;color:var(--text-soft);}
+
+/* ---------- 文化：fact 只保留 3px 篇色左竖线，底透明 ---------- */
+.fact{margin-top:var(--s3);padding-left:var(--s3);border-left:3px solid var(--piece);font-size:14px;line-height:1.75;color:var(--text-soft);}
+.fact b{color:var(--ink);}
+.src{margin-top:var(--s4);font-size:12px;color:var(--text-soft);}
+.src summary{display:flex;align-items:center;gap:var(--s1);min-height:44px;font-weight:600;list-style:none;cursor:pointer;}
+.src summary::-webkit-details-marker{display:none;}
+.src[open] .chev{transform:rotate(90deg);}
+.src p{margin:var(--s1) 0 0;line-height:1.7;}
+.chev{color:var(--text-muted);font-size:13px;line-height:1;}
+
+/* ---------- 底部 CTA：全页唯一 --brand 实底 ---------- */
+.cta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:var(--s4);
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.cta-body{flex:1;min-width:160px;}
+.cta-t{font-size:15px;font-weight:700;}
+.cta-s{margin-top:2px;font-size:13px;color:var(--text-soft);}
+.cta-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;padding:0 var(--s4);white-space:nowrap;
+  background:var(--brand);color:var(--on-fill);
+  border-radius:var(--r-ctl);
+  font-size:14px;font-weight:600;text-decoration:none;
+}
+.cta-btn:active{background:var(--brand-press);}
+
+@media (max-width:360px){
+  .tabbar{gap:var(--s1);}
+  .panel,header.cover,.cta{padding:var(--s4);}
+}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto !important;}
+}
+</style>
+</head>
+<body>
+<!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
+<script>document.documentElement.setAttribute('data-tabs','on');</script>
+
+<div class="wrap" data-piece="a4">
+
+  <header class="cover">
+    <h1 class="ja" lang="ja"><ruby>日本<rt>にほん</rt></ruby>のコンビニ</h1>
+    <div class="meta">
+      <span class="tag">15 句 · 全假名注音</span>
+      <span class="tag">大家的日本语 第1–15课语法</span>
+    </div>
+    <p class="lead">日本便利店不只是买东西的地方：能取钱、复印、寄快递、买票，深夜也开着。全国大约 5 万 6 千家——这篇用初级语法，把便利店能做的事一次说清。</p>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="文章分区">
+    <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
+    <span class="stamp" aria-hidden="true">04</span>
+    <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
+    <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
+    <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
+    <button role="tab" aria-selected="false" aria-controls="culture" id="tab-culture" tabindex="-1">文化</button>
+  </nav>
+
+  <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
+    <h2>课文</h2>
+    <div class="toolbar">
+      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
+      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <span data-voice-slot></span>
+    </div>
+    <div id="article"></div>
+  </section>
+
+  <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
+    <h2>词汇表</h2>
+    <ul class="vocab" id="vocabList"></ul>
+  </section>
+
+  <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
+    <h2>语法点（对标《大家的日本语》）</h2>
+    <div class="g-item">
+      <span class="g-form">〜には　〜が　あります</span><span class="g-lesson">第4课</span>
+      <div class="g-ex">说"某处有某物"，场所后加「には」：<ruby>日本<rt>にほん</rt></ruby><b>には</b>、コンビニ<b>が</b>たくさんあります。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜も</span><span class="g-lesson">第3课</span>
+      <div class="g-ex">"也"：コピー機<b>も</b>あります。当前面已提过同类事物，用它把清单继续往下加。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜や　〜や</span><span class="g-lesson">第3课</span>
+      <div class="g-ex">列举（暗示还有别的）：お弁当<b>や</b>、おにぎり<b>や</b>、おでんも売っています。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜ています</span><span class="g-lesson">第14课</span>
+      <div class="g-ex">表示持续的状态：売っ<b>ています</b>（有在卖）、あい<b>ています</b>（开着）。不是"正在做"，而是"一直处于这个状态"。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜で（动作场所）</span><span class="g-lesson">第6课</span>
+      <div class="g-ex">レジ<b>で</b>お弁当を温めます＝在收银台加热。场所用「で」，存在用「に」。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜たいです</span><span class="g-lesson">第11课</span>
+      <div class="g-ex">愿望：お弁当を買い<b>たいです</b>（想买便当）。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">「〜ますか」常套句</span><span class="g-lesson">实用</span>
+      <div class="g-ex">店里最常听到的一句：<b>「温めますか」</b>（要加热吗？）。答：はい、お願いします／いいえ、大丈夫です。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
+    <h2>文化小知识</h2>
+    <div class="fact">
+      🏪 <b>规模</b>：据日本加盟连锁协会（JFA）统计，2024 年 12 月全国便利店共 <b>55,736 家</b>，三大连锁是 7-Eleven、Lawson、FamilyMart。
+    </div>
+    <div class="fact">
+      🌙 <b>不只是买东西</b>：多数 24 小时营业，店内可 ATM 取现、复印/打印、寄快递（宅配便）、买演唱会与车票、缴水电燃气费；柜台还能吃到关东煮、炸鸡和现磨咖啡。
+    </div>
+    <div class="fact">
+      🛍️ <b>两个容易忽略的细节</b>：塑料袋自 2020 年 7 月起<b>收费</b>（约 3–5 日元），多数人会自备袋子；店里排队时结账口地面有<b>脚印贴纸</b>，站上去就是等候线。
+    </div>
+    <details class="src">
+      <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
+      <p>日本フランチャイズチェーン協会（JFA）2024 年 12 月店铺数统计（经朝日新闻 SDGs 报道转引）；コンビニ各社公开的服务介绍（ATM・コピー・宅配便・チケット・公共料金）；日本环境省塑料袋收费制度（2020 年 7 月施行）。本页日文课文为原创编写，仅使用上述公开事实。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <div class="cta-body">
+      <div class="cta-t">读完测一下</div>
+      <div class="cta-s">コンビニ这 15 个词，翻卡自测，只看这一篇。</div>
+    </div>
+    <a class="cta-btn" href="review.html?set=a4">测这 15 个词 →</a>
+  </div>
+
+</div>
+
+<script src="voice.js"></script>
+<script>
+const SENTS = [
+  {jp:'<ruby>日本<rt>にほん</rt></ruby>には、コンビニがたくさんあります。',
+   ro:'Nihon niwa, konbini ga takusan arimasu.',
+   zh:'日本有很多便利店。',
+   plain:'日本には、コンビニがたくさんあります。'},
+  {jp:'ぜんぶで、<ruby>五万六千店<rt>ごまんろくせんてん</rt></ruby>ぐらいあります。',
+   ro:'Zenbu de, goman rokusen-ten gurai arimasu.',
+   zh:'一共大约五万六千家。',
+   plain:'ぜんぶで、五万六千店ぐらいあります。'},
+  {jp:'コンビニは、<ruby>夜<rt>よる</rt></ruby>もあいています。',
+   ro:'Konbini wa, yoru mo aite imasu.',
+   zh:'便利店夜里也开着。',
+   plain:'コンビニは、夜もあいています。'},
+  {jp:'<ruby>中<rt>なか</rt></ruby>には、<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>や<ruby>飲<rt>の</rt></ruby>み<ruby>物<rt>もの</rt></ruby>があります。',
+   ro:'Naka niwa, tabemono ya nomimono ga arimasu.',
+   zh:'店里有食物和饮料。',
+   plain:'中には、食べ物や飲み物があります。'},
+  {jp:'お<ruby>弁当<rt>べんとう</rt></ruby>や、おにぎりや、おでんも<ruby>売<rt>う</rt></ruby>っています。',
+   ro:'Obentō ya, onigiri ya, oden mo utte imasu.',
+   zh:'卖便当、饭团，还有关东煮。',
+   plain:'お弁当や、おにぎりや、おでんも売っています。'},
+  {jp:'<ruby>店<rt>みせ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は、レジでお<ruby>弁当<rt>べんとう</rt></ruby>を<ruby>温<rt>あたた</rt></ruby>めます。',
+   ro:'Mise no hito wa, reji de obentō o atatamemasu.',
+   zh:'店员会在收银台把便当加热。',
+   plain:'店の人は、レジでお弁当を温めます。'},
+  {jp:'コーヒーは、<ruby>自分<rt>じぶん</rt></ruby>で<ruby>入<rt>い</rt></ruby>れます。',
+   ro:'Kōhī wa, jibun de iremasu.',
+   zh:'咖啡要自己倒。',
+   plain:'コーヒーは、自分で入れます。'},
+  {jp:'コンビニには、ATMがあります。',
+   ro:'Konbini niwa, ATM ga arimasu.',
+   zh:'便利店里有 ATM。',
+   plain:'コンビニには、ATMがあります。'},
+  {jp:'コピー<ruby>機<rt>き</rt></ruby>もあります。',
+   ro:'Kopī-ki mo arimasu.',
+   zh:'也有复印机。',
+   plain:'コピー機もあります。'},
+  {jp:'<ruby>宅配便<rt>たくはいびん</rt></ruby>のサービスもあります。',
+   ro:'Takuhaibin no sābisu mo arimasu.',
+   zh:'还有快递服务。',
+   plain:'宅配便のサービスもあります。'},
+  {jp:'チケットも<ruby>売<rt>う</rt></ruby>っています。',
+   ro:'Chiketto mo utte imasu.',
+   zh:'也卖票。',
+   plain:'チケットも売っています。'},
+  {jp:'<ruby>雨<rt>あめ</rt></ruby>の<ruby>日<rt>ひ</rt></ruby>は、<ruby>傘<rt>かさ</rt></ruby>も<ruby>売<rt>う</rt></ruby>っています。',
+   ro:'Ame no hi wa, kasa mo utte imasu.',
+   zh:'下雨天还卖伞。',
+   plain:'雨の日は、傘も売っています。'},
+  {jp:'<ruby>日本<rt>にほん</rt></ruby>のコンビニは、とても<ruby>便利<rt>べんり</rt></ruby>です。',
+   ro:'Nihon no konbini wa, totemo benri desu.',
+   zh:'日本的便利店非常方便。',
+   plain:'日本のコンビニは、とても便利です。'},
+  {jp:'ごみは、<ruby>家<rt>いえ</rt></ruby>に<ruby>持<rt>も</rt></ruby>って<ruby>帰<rt>かえ</rt></ruby>ります。',
+   ro:'Gomi wa, ie ni motte kaerimasu.',
+   zh:'垃圾要自己带回家。',
+   plain:'ごみは、家に持って帰ります。'},
+  {jp:'<ruby>私<rt>わたし</rt></ruby>も、コンビニでお<ruby>弁当<rt>べんとう</rt></ruby>を<ruby>買<rt>か</rt></ruby>いたいです。',
+   ro:'Watashi mo, konbini de obentō o kaitai desu.',
+   zh:'我也想在便利店买便当。',
+   plain:'私も、コンビニでお弁当を買いたいです。'}
+];
+
+const VOCAB = [
+  {w:'コンビニ', k:'', r:'konbini', m:'便利店。「コンビニエンスストア」的省略，日常只说 コンビニ。'},
+  {w:'〜店', k:'てん', r:'-ten', m:'店铺的量词/结尾词：五万六千店。注意和「店（みせ）」读音不同。'},
+  {w:'夜', k:'よる', r:'yoru', m:'夜晚。反义：朝（あさ）。「夜も」＝夜里也（开着）。'},
+  {w:'食べ物', k:'たべもの', r:'tabemono', m:'食物。构词：食べる＋物；同类还有 飲み物、買い物。'},
+  {w:'飲み物', k:'のみもの', r:'nomimono', m:'饮料。'},
+  {w:'お弁当', k:'おべんとう', r:'obentō', m:'便当。便利店最常见的一餐，加热免费。'},
+  {w:'おにぎり', k:'', r:'onigiri', m:'饭团。三角形，海苔包着，是最便宜的填肚子选择。'},
+  {w:'おでん', k:'', r:'oden', m:'关东煮。冬天柜台上的一锅，萝卜、鸡蛋、鱼豆腐等。'},
+  {w:'温めます', k:'あたためます', r:'atatamemasu', m:'加热。收银台高频句「温めますか」＝要加热吗？'},
+  {w:'レジ', k:'', r:'reji', m:'收银台。来自英语 register；「レジ袋」＝塑料袋。'},
+  {w:'自分で', k:'じぶんで', r:'jibun de', m:'自己（做）。便利店咖啡要自己在机器上操作。'},
+  {w:'コピー機', k:'コピーき', r:'kopī-ki', m:'复印机。多数便利店都有，可复印、打印。'},
+  {w:'宅配便', k:'たくはいびん', r:'takuhaibin', m:'快递、包裹寄送服务。柜台可直接下单。'},
+  {w:'傘', k:'かさ', r:'kasa', m:'伞。下雨天便利店门口会摆透明伞，约 500–650 日元。'},
+  {w:'持って帰ります', k:'もってかえります', r:'motte kaerimasu', m:'带回去、拿回家。便利店的垃圾箱只放店里买的东西，其他垃圾要自己带走。'}
+];
+
+const TABS = ['text','vocab','grammar','culture'];
+const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+
+/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
+function activate(id, silent){
+  if(TABS.indexOf(id) < 0) id = 'text';
+  TABS.forEach(function(p){
+    const sec = document.getElementById(p);
+    const tab = document.getElementById('tab-' + p);
+    const on = (p === id);
+    if(sec) sec.classList.toggle('active', on);
+    if(tab){
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.tabIndex = on ? 0 : -1;
+    }
+  });
+  if(!silent){
+    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
+    try{ history.replaceState(null, '', url); }
+    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
+  }
+  return id;
+}
+
+function currentTab(){
+  for(let i = 0; i < TABS.length; i++){
+    const t = document.getElementById('tab-' + TABS[i]);
+    if(t && t.getAttribute('aria-selected') === 'true') return i;
+  }
+  return 0;
+}
+
+/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
+function revealPanel(sec){
+  if(!sec) return;
+  const top = sec.getBoundingClientRect().top + window.pageYOffset;
+  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
+}
+
+TABS.forEach(function(p){
+  const tab = document.getElementById('tab-' + p);
+  if(!tab) return;
+  tab.addEventListener('click', function(){
+    activate(p);
+    revealPanel(document.getElementById(p));
+  });
+});
+
+document.querySelector('.tabbar').addEventListener('keydown', function(e){
+  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const i = currentTab();
+  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
+  const id = activate(TABS[next]);
+  document.getElementById('tab-' + id).focus();
+  revealPanel(document.getElementById(id));
+});
+
+window.addEventListener('hashchange', function(){
+  const h = (location.hash || '').replace('#', '');
+  if(TABS.indexOf(h) >= 0) activate(h, true);
+});
+
+/* ---------- 课文 ---------- */
+const art = document.getElementById('article');
+SENTS.forEach(function(s, i){
+  const n = i + 1;
+  const div = document.createElement('div');
+  div.className = 'sent';
+  div.innerHTML =
+    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
+    '<div class="s-body">' +
+      '<p class="jp" lang="ja">' + s.jp +
+        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
+          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
+        '</button>' +
+      '</p>' +
+      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
+      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
+    '</div>' +
+    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
+  art.appendChild(div);
+});
+
+/* ---------- 词汇（含"出现在第几句"反查号）---------- */
+function refSentence(w){
+  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
+  if(!key) return 0;
+  for(let i = 0; i < SENTS.length; i++){
+    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
+  }
+  return 0;
+}
+const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
+const vlist = document.getElementById('vocabList');
+VOCAB.forEach(function(v){
+  const ref = refSentence(v.w);
+  const li = document.createElement('li');
+  li.className = 'v-row';
+  li.innerHTML =
+    '<div class="v-top">' +
+      '<b class="v-w" lang="ja">' + v.w + '</b>' +
+      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
+      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
+      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
+    '</div>' +
+    '<div class="v-m">' + v.m + '</div>';
+  vlist.appendChild(li);
+});
+
+/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
+const btnZh = document.getElementById('btnZh');
+const btnRo = document.getElementById('btnRo');
+const zhState = SENTS.map(function(){ return false; });
+
+function setZh(i, on){
+  zhState[i] = on;
+  const box = document.getElementById('zh-' + (i + 1));
+  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
+  if(box) box.hidden = !on;
+  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+}
+function syncMaster(){
+  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
+  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
+  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
+  const any = zhState.some(Boolean);
+  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
+  btnZh.classList.toggle('on', any);
+}
+btnZh.onclick = function(){
+  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
+  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
+  syncMaster();
+};
+
+let roOn = false;
+btnRo.onclick = function(){
+  roOn = !roOn;
+  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
+  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
+  this.classList.toggle('on', roOn);
+};
+
+/* ---------- 朗读 ---------- */
+function speakJa(text, rate){
+  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
+}
+art.addEventListener('click', function(e){
+  const zt = e.target.closest('.zh-toggle');
+  if(zt){
+    const i = +zt.dataset.i;
+    setZh(i, !zhState[i]);
+    syncMaster();          // 逐句联动全局文案
+    return;
+  }
+  const snd = e.target.closest('.snd');
+  if(snd){
+    try{ speechSynthesis.cancel(); }catch(err){}
+    speakJa(SENTS[+snd.dataset.i].plain);
+  }
+});
+
+let playing = false;
+document.getElementById('btnAll').onclick = async function(){
+  if(playing){
+    try{ speechSynthesis.cancel(); }catch(e){}
+    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+    return;
+  }
+  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
+  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
+  for(const s of SENTS){
+    if(!playing) break;
+    await speakJa(s.plain, 0.85);
+    await new Promise(function(r){ setTimeout(r, 500); });
+  }
+  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+};
+
+/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
+(function(){
+  const h = (location.hash || '').replace('#', '');
+  activate(TABS.indexOf(h) >= 0 ? h : 'text');
+})();
+</script>
+</body>
+</html>

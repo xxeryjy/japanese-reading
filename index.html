@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>日语初级阅读</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
+   R1 本页唯一 --brand 实底 = 今日卡里的「开始今日复习」。R6 本页无投影（卡片一律 1px --line + 留白分层）。 */
+*,*::before,*::after{box-sizing:border-box;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-zh);
+  font-size:15px;
+  line-height:1.8;
+  padding:env(safe-area-inset-top,0px) var(--s4) calc(var(--s10) + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:560px;margin:0 auto;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+
+/* ---------- 页头：92px 内交代完，不放说明书式的统计 pill ---------- */
+header{margin-bottom:var(--s5);}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--text-muted);}
+h1{margin:var(--s2) 0 0;font-size:clamp(1.5rem,7.8vw,2rem);font-weight:700;line-height:1.35;letter-spacing:.02em;}
+.sub{margin:var(--s1) 0 0;font-size:13px;color:var(--text-soft);}
+
+/* ---------- 今日卡：本页唯一白卡 + 唯一实底 ---------- */
+.today{
+  margin-bottom:var(--s5);padding:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.t-kicker{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--text-muted);}
+.t-big{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1);}
+.t-big b{font-size:40px;font-weight:700;line-height:1.1;color:var(--brand);font-variant-numeric:tabular-nums;}
+.t-big span{font-size:15px;font-weight:600;color:var(--text-soft);}
+.t-sub{margin-top:var(--s1);font-size:12px;color:var(--text-muted);}
+.t-prog{margin-top:var(--s3);}
+.t-prog-row{font-size:12.5px;color:var(--text-soft);}
+.t-prog-row b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.bar{height:4px;margin-top:var(--s2);background:var(--line);border-radius:var(--r-pill);overflow:hidden;}
+.bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:var(--r-pill);transition:width .25s;}
+.t-btn{
+  display:flex;align-items:center;justify-content:center;
+  height:52px;margin-top:var(--s4);
+  background:var(--brand);color:var(--on-fill);
+  border-radius:var(--r-ctl);
+  font-family:var(--font-zh);font-size:16px;font-weight:600;text-decoration:none;
+}
+.t-btn:active{background:var(--brand-press);}
+
+/* ---------- 阅读入口：无图标、无投影 ---------- */
+.entry{
+  display:flex;align-items:center;gap:var(--s4);
+  padding:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  color:inherit;text-decoration:none;
+}
+.entry:active{transform:scale(.99);}
+.e-body{flex:1;min-width:0;}
+.e-t{font-size:20px;font-weight:700;line-height:1.4;}
+.e-s{margin-top:2px;font-size:13px;color:var(--text-soft);}
+.chev{flex:none;color:var(--text-muted);font-size:18px;line-height:1;}
+
+footer{margin-top:var(--s6);font-size:12px;color:var(--text-soft);line-height:1.8;text-align:center;}
+
+@media (max-width:380px){
+  .today{padding:var(--s4);}
+  .entry{padding:var(--s4);gap:var(--s3);}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar i{transition:none;}
+  .entry:active{transform:none;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">初级日语 · 生活与文化</div>
+    <h1>日语初级阅读</h1>
+    <p class="sub">73 句 · 75 个词 · 全假名注音</p>
+  </header>
+
+  <section class="today">
+    <div class="t-kicker">今天</div>
+    <div class="t-big"><b id="dueN">—</b><span>个词到期</span></div>
+    <div class="t-sub" id="dueSub">本机还没有记录，登录后会自动合并</div>
+    <div class="t-prog">
+      <div class="t-prog-row">已掌握 <b id="masterN">0</b> / <span id="totalN">75</span></div>
+      <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="75" aria-valuenow="0" aria-label="已掌握进度"><i id="fill"></i></div>
+    </div>
+    <a class="t-btn" href="review.html">开始今日复习</a>
+  </section>
+
+  <a class="entry" href="reading.html">
+    <div class="e-body">
+      <div class="e-t">阅读</div>
+      <div class="e-s">5 篇 · 73 句</div>
+    </div>
+    <span class="chev" aria-hidden="true">›</span>
+  </a>
+
+  <footer>课文为原创编写，仅使用 JNTO、JVMA 等公开资料中的文化事实。</footer>
+</div>
+<script src="vendor/workbuddy-cloud-sdk.js"></script>
+<script>
+if(!window.WorkBuddyCloud){
+  var _s=document.createElement('script');
+  _s.src='https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js';
+  document.head.appendChild(_s);
+}
+</script>
+<script src="cloud.js"></script>
+<script>
+/* 今日数口径 —— 必须与 review.html 完全一致：
+   到期 = 学过的词里 s<3 且 due<=now；新词（n 为 0 / 无记录）不计入到期，单独算「还没开始」。
+   分母固定 75。这条修掉了旧版「今日待复习 75 / 还没开始 75」的双计数矛盾。
+   WORDS75 是 review.html 里 WORDS 的 ja 键，词表变动时两处同步（后续可抽 words.js）。 */
+const WORDS75 = [
+  '自動販売機','約','〜台','世界','多い','〜の一つ','だけではありません','売っています','あたたかい','ラベル','安全（な）','安心（な）','便利（な）','寒い',
+  '〜たいです','お正月','大切（な）','休み','年賀状','送ります','一緒に','おせち料理','意味','黒豆','数の子','神社','初詣','健康','お願いします','お年玉',
+  '温泉','火山','お湯','気持ちがいい','ルール','体を洗う','タオル','水着','髪を上げる','露天風呂','旅館','体にいい','特に','いつか','入ってはいけません',
+  'コンビニ','〜店','夜','食べ物','飲み物','お弁当','おにぎり','おでん','温めます','レジ','自分で','コピー機','宅配便','傘','持って帰ります','電車',
+  'ホーム','順番に','並びます','携帯電話','マナーモード','車内','優先席','お年寄り','ゆずります','女性専用車','かけ込み乗車','荷物','ごみ箱','正確（な）'
+];
+
+(function(){
+  const KEY = 'jp_srs_v2';
+  const MASTER_AT = 3;
+  const MAX_SESSION = 20;      // 与 review.html 的单次上限一致
+  const SEC_PER_WORD = 6;      // 20 个词 ≈ 2 分钟，与复习页「约 2 分钟」对齐
+  const $ = id => document.getElementById(id);
+
+  let S = {};
+  try{ S = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; }catch(e){ S = {}; }
+
+  const TOTAL = WORDS75.length;
+  let due = 0, fresh = 0, mastered = 0;
+  WORDS75.forEach(k => {
+    const r = S[k];
+    if(!r || !(r.n > 0)){ fresh++; return; }         // 没学过 → 还没开始，不算到期
+    if((r.s | 0) >= MASTER_AT) mastered++;
+    else if((r.due || 0) <= Date.now()) due++;
+  });
+  const learned = TOTAL - fresh;
+
+  $('totalN').textContent = TOTAL;
+  $('masterN').textContent = mastered;
+  $('fill').style.width = (mastered / TOTAL * 100) + '%';
+  $('bar').setAttribute('aria-valuenow', String(mastered));
+
+  const dueN = $('dueN'), sub = $('dueSub');
+  if(!learned){
+    // 新设备：不显示 0，避免"今天没事做"的误读
+    dueN.textContent = '—';
+    sub.textContent = '本机还没有记录，登录后会自动合并';
+  }else if(!due){
+    dueN.textContent = '0';
+    sub.textContent = (fresh ? '今天没有到期的词 · 另有 ' + fresh + ' 个还没开始' : '今天没有到期的词，明天再来');
+  }else{
+    // 分钟数按「本轮实际上限」算（1 轮 = 最多 20 个），与复习页「约 2 分钟 · 每次最多 20 个」同源
+    const min = Math.max(1, Math.round(Math.min(due, MAX_SESSION) * SEC_PER_WORD / 60));
+    const parts = ['约 ' + min + ' 分钟'];
+    if(due > MAX_SESSION) parts.push('每次最多 ' + MAX_SESSION + ' 个');
+    if(fresh) parts.push('另有 ' + fresh + ' 个还没开始');
+    dueN.textContent = due;
+    sub.textContent = parts.join(' · ');
+  }
+})();
+</script>
+<script>
+/* Service Worker：断网也能打开、朗读照常（朗读用系统语音，本来就离线）。
+   只在 https 下注册 —— file:// 直接打开会抛 SecurityError，局域网 http 也不允许。 */
+if('serviceWorker' in navigator && location.protocol === 'https:'){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){
+      /* 注册失败不影响正常使用，只是没有离线缓存 */
+    });
+  });
+}
+</script>
+</body>
+</html>

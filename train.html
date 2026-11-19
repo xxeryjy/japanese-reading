@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>電車のマナー｜日语初级阅读·生活篇 05</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
+   R1 全页唯一 --brand 实底 = 底部 CTA。R6 本页无投影（卡片一律 1px --line + 留白分层）。
+   篇色只出现在 3 个合法位置：封面 3px 顶线 / 吸顶条印章 / 文化 fact 3px 左竖线。
+   骨架顺序（其余 4 篇同构）：.cover → .tabbar → #text/#vocab/#grammar/#culture → .cta */
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-zh);
+  font-size:15px;
+  line-height:1.75;
+  padding:var(--s5) var(--s4) calc(var(--s14) + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:640px;margin:0 auto;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+/* 注音：340 以下放大一点点，避免"有注音的行看起来更高" */
+rt{font-size:.6em;line-height:1.1;color:var(--text-soft);}
+@media (max-width:340px){ rt{font-size:.62em;} }
+
+/* ---------- 封面 ---------- */
+header.cover{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-top:3px solid var(--piece);      /* R5 位置② */
+  border-radius:var(--r-card);
+}
+h1.ja{margin:0;font-family:var(--font-ja);font-size:clamp(1.5rem,7.8vw,2rem);font-weight:700;line-height:1.35;letter-spacing:.01em;}
+h1.ja rt{font-size:.5em;}
+.meta{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3);}
+.tag{padding:2px var(--s2);border-radius:var(--r-pill);background:var(--inset);color:var(--text-soft);font-size:12px;}
+.lead{
+  margin:var(--s3) 0 0;font-size:15px;line-height:1.7;color:var(--text-soft);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ---------- 吸顶 tab（top 与 padding-top 双写：条的底色必须盖住刘海区）---------- */
+.tabbar{
+  position:sticky;
+  top:env(safe-area-inset-top,0px);
+  padding-top:env(safe-area-inset-top,0px);
+  z-index:20;
+  display:flex;align-items:center;gap:var(--s2);
+  min-height:52px;                      /* 不用 height：padding 会撑高 */
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.back{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:var(--r-pill);
+  border:1px solid var(--line-control);background:var(--card);
+  color:var(--text-soft);font-size:18px;line-height:1;text-decoration:none;
+}
+.stamp{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--r-tag);
+  background:var(--piece);color:var(--on-fill);
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+/* 激活态＝2px --ink 下划线 + ink/600；未激活 text-soft/400。全条唯一有色元素是印章（无 brand） */
+.tabbar [role="tab"]{
+  position:relative;flex:1;min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin:0;padding:0 var(--s1);
+  border:0;background:none;cursor:pointer;
+  font-family:var(--font-zh);font-size:13px;font-weight:400;color:var(--text-soft);
+}
+.tabbar [role="tab"]::after{
+  content:"";position:absolute;left:var(--s2);right:var(--s2);bottom:0;height:2px;background:transparent;
+}
+.tabbar [role="tab"][aria-selected="true"]{color:var(--ink);font-weight:600;}
+.tabbar [role="tab"][aria-selected="true"]::after{background:var(--ink);}
+
+/* ---------- 4 个切面 ---------- */
+.panel{
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  scroll-margin-top:calc(52px + env(safe-area-inset-top,0px));
+}
+/* 无 JS 时 data-tabs 不存在 → 4 区全可见；JS 一进来就把它挂上，避免"先渲染 #text 再跳" */
+html[data-tabs="on"] .panel{display:none;}
+html[data-tabs="on"] .panel.active{display:block;}
+.panel h2{
+  margin:0 0 var(--s3);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);
+  font-size:17px;font-weight:700;line-height:1.4;
+}
+
+/* ---------- 工具行 ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);margin-bottom:var(--s3);}
+.tbtn{
+  min-height:44px;padding:0 var(--s4);
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);color:var(--ink);
+  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+}
+.tbtn:active{background:var(--inset);}
+.tbtn.on{background:var(--ink);border-color:var(--ink);color:var(--on-fill);}
+/* 语音入口在工具行里当一个 pill 用（voice.js 注入的 .jpv-entry 默认是整行按钮） */
+.toolbar [data-voice-slot]{flex:0 1 auto;min-width:0;}
+.toolbar .jpv-entry{width:auto;padding:0 var(--s4);border-radius:var(--r-pill);}
+
+/* ---------- 课文：24px 序号槽 + 正文 + 44px 朗读 ---------- */
+.sent{
+  display:grid;grid-template-columns:24px 1fr 44px;column-gap:var(--s2);
+  align-items:start;padding:var(--s2) 0;
+  border-bottom:1px solid var(--line);
+}
+.sent:last-child{border-bottom:0;}
+/* 序号与首行基线对齐（无 token 可用的光学值，改字号时一起调） */
+.sn{padding-top:9px;font-size:11.5px;line-height:1;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.jp{margin:0;font-family:var(--font-ja);font-size:1.125rem;line-height:1.9;letter-spacing:.01em;}
+@media (min-width:375px){ .jp{font-size:1.25rem;} }
+.ro{margin:var(--s1) 0 0;font-size:12.5px;line-height:1.6;color:var(--text-soft);}
+.zh{margin:var(--s1) 0 0;font-size:14px;line-height:1.7;color:var(--text-soft);}
+/* 逐句「译」：44×44 热区、视觉 28px 胶囊；负上下 margin 让 1 行句子的行高不被撑开 */
+.zh-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:44px;min-height:44px;margin:-7px -4px -7px var(--s2);padding:0;
+  border:0;background:none;cursor:pointer;vertical-align:middle;font-family:inherit;
+}
+.zh-toggle .chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border:1px solid var(--text-soft);border-radius:var(--r-pill);
+  background:var(--card);color:var(--text-soft);
+  font-size:12px;font-weight:600;line-height:1;
+}
+.zh-toggle[aria-expanded="true"] .chip{border-color:var(--ink);color:var(--ink);}
+.snd{
+  width:44px;height:44px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--line-control);border-radius:var(--r-pill);
+  background:var(--card);cursor:pointer;
+}
+.snd:active{background:var(--inset);}
+.snd svg{width:18px;height:18px;fill:var(--ink);}
+
+/* ---------- 词汇：≤400 一律 2 行式（第 1 行词+假名+罗马音，第 2 行释义满宽）---------- */
+.vocab{list-style:none;margin:0;padding:0;}
+.v-row{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.v-row:last-child{border-bottom:0;}
+.v-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);}
+.v-w{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.v-k{font-family:var(--font-ja);font-size:13px;color:var(--text-soft);}
+.v-r{font-size:12px;color:var(--text-muted);}
+.v-ref{margin-left:auto;font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums;}
+.v-m{margin-top:var(--s1);font-size:14px;line-height:1.7;color:var(--text-soft);}
+mark{background:var(--mark);color:var(--ink);padding:0 3px;border-radius:var(--r-tag);}
+
+/* ---------- 语法 ---------- */
+.g-item{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.g-item:last-child{border-bottom:0;}
+.g-form{font-family:var(--font-ja);font-size:16px;font-weight:700;color:var(--ink);}
+.g-lesson{
+  display:inline-block;margin-left:var(--s2);padding:1px var(--s2);
+  border-radius:var(--r-tag);background:var(--inset);color:var(--text-soft);
+  font-size:12px;font-weight:400;vertical-align:middle;
+}
+.g-ex{margin-top:var(--s1);font-size:14px;line-height:1.75;color:var(--text-soft);}
+
+/* ---------- 文化：fact 只保留 3px 篇色左竖线，底透明 ---------- */
+.fact{margin-top:var(--s3);padding-left:var(--s3);border-left:3px solid var(--piece);font-size:14px;line-height:1.75;color:var(--text-soft);}
+.fact b{color:var(--ink);}
+.src{margin-top:var(--s4);font-size:12px;color:var(--text-soft);}
+.src summary{display:flex;align-items:center;gap:var(--s1);min-height:44px;font-weight:600;list-style:none;cursor:pointer;}
+.src summary::-webkit-details-marker{display:none;}
+.src[open] .chev{transform:rotate(90deg);}
+.src p{margin:var(--s1) 0 0;line-height:1.7;}
+.chev{color:var(--text-muted);font-size:13px;line-height:1;}
+
+/* ---------- 底部 CTA：全页唯一 --brand 实底 ---------- */
+.cta{
+  display:flex;align-items:center;flex-wrap:wrap;gap:var(--s4);
+  padding:var(--s5);margin-bottom:var(--s5);
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+}
+.cta-body{flex:1;min-width:160px;}
+.cta-t{font-size:15px;font-weight:700;}
+.cta-s{margin-top:2px;font-size:13px;color:var(--text-soft);}
+.cta-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;padding:0 var(--s4);white-space:nowrap;
+  background:var(--brand);color:var(--on-fill);
+  border-radius:var(--r-ctl);
+  font-size:14px;font-weight:600;text-decoration:none;
+}
+.cta-btn:active{background:var(--brand-press);}
+
+@media (max-width:360px){
+  .tabbar{gap:var(--s1);}
+  .panel,header.cover,.cta{padding:var(--s4);}
+}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto !important;}
+}
+</style>
+</head>
+<body>
+<!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
+<script>document.documentElement.setAttribute('data-tabs','on');</script>
+
+<div class="wrap" data-piece="a5">
+
+  <header class="cover">
+    <h1 class="ja" lang="ja"><ruby>電車<rt>でんしゃ</rt></ruby>のマナー</h1>
+    <div class="meta">
+      <span class="tag">15 句 · 全假名注音</span>
+      <span class="tag">大家的日本语 第1–15课语法</span>
+    </div>
+    <p class="lead">日本电车很安静——不是没人说话，而是大家都在守规矩：手机静音、不打电话、优先席要让座、行李箱不堵门。这篇把官方礼仪写成 15 句初级日语。</p>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="文章分区">
+    <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
+    <span class="stamp" aria-hidden="true">05</span>
+    <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
+    <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
+    <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
+    <button role="tab" aria-selected="false" aria-controls="culture" id="tab-culture" tabindex="-1">文化</button>
+  </nav>
+
+  <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
+    <h2>课文</h2>
+    <div class="toolbar">
+      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
+      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <span data-voice-slot></span>
+    </div>
+    <div id="article"></div>
+  </section>
+
+  <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
+    <h2>词汇表</h2>
+    <ul class="vocab" id="vocabList"></ul>
+  </section>
+
+  <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
+    <h2>语法点（对标《大家的日本语》）</h2>
+    <div class="g-item">
+      <span class="g-form">〜てはいけません</span><span class="g-lesson">第15课</span>
+      <div class="g-ex">禁止：電車の中で、携帯電話で話し<b>てはいけません</b>。这是车厢广播和告示最常用的句型。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜では（场所 + は）</span><span class="g-lesson">第6课</span>
+      <div class="g-ex">把场所提为话题：車内<b>では</b>、大きい声で話しません＝在车厢里（大家都）不大声说话。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜にします</span><span class="g-lesson">第? 课（实用）</span>
+      <div class="g-ex">"弄成、设为某状态"：電話は、マナーモード<b>にします</b>。同类：静かにします、小さい音にします。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">い形容词：危ない</span><span class="g-lesson">第8课</span>
+      <div class="g-ex">かけ込み乗車は、<b>危ない</b>です。（赶着上车很危险。）い形容词作谓语直接＋です。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜ません（礼貌否定）</span><span class="g-lesson">第2课</span>
+      <div class="g-ex">不是"不能"，而是"（大家）不做"：話し<b>ません</b>、置き<b>ません</b>。描述习惯与规矩时常用。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">「降りる人が先です」</span><span class="g-lesson">固定说法</span>
+      <div class="g-ex">先下后上。整句背下来，车厢门口天天听得到，也说「降りる人が先ですよ」。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
+    <h2>文化小知识</h2>
+    <div class="fact">
+      📵 <b>车厢三条硬规矩</b>（JR 西日本官方礼仪页）：手机设为静音、不在车厢内通话、不大声谈笑。日本的"安静车厢"不是靠提醒，而是靠每个人默认执行。
+    </div>
+    <div class="fact">
+      ♿ <b>优先席不是"老弱专座"那么简单</b>：孕妇、哺乳期女性、残障人士、高龄者及其他需要的人都可以坐；有需要时旁人要主动让座。
+    </div>
+    <div class="fact">
+      🚺 <b>女性专用车厢</b>：多为通勤时段限定，仅限女性乘坐；小学及以下男童、以及需照护者陪同的男性可以同乘。
+    </div>
+    <div class="fact">
+      🧳 <b>两个容易犯的错</b>：把大件行李放在车门附近会挡住上下车（官方明确要求留出通道）；赶着冲进正在关门的车厢（かけ込み乗車）既危险又招人反感。
+    </div>
+    <details class="src">
+      <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
+      <p>西日本旅客铁道（JR West）官方《车站及电车内礼仪》中文版（静音与通话规定、优先席范围、女性专用车厢、行李与站台提示）。本页日文课文为原创编写，仅使用上述公开礼仪事实。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <div class="cta-body">
+      <div class="cta-t">读完测一下</div>
+      <div class="cta-s">電車这 15 个词，翻卡自测，只看这一篇。</div>
+    </div>
+    <a class="cta-btn" href="review.html?set=a5">测这 15 个词 →</a>
+  </div>
+
+</div>
+
+<script src="voice.js"></script>
+<script>
+const SENTS = [
+  {jp:'<ruby>日本<rt>にほん</rt></ruby>では、<ruby>電車<rt>でんしゃ</rt></ruby>がとても<ruby>便利<rt>べんり</rt></ruby>です。',
+   ro:'Nihon dewa, densha ga totemo benri desu.',
+   zh:'在日本，电车非常方便。',
+   plain:'日本では、電車がとても便利です。'},
+  {jp:'<ruby>朝<rt>あさ</rt></ruby>と<ruby>夕方<rt>ゆうがた</rt></ruby>は、<ruby>電車<rt>でんしゃ</rt></ruby>がとてもこみます。',
+   ro:'Asa to yūgata wa, densha ga totemo komimasu.',
+   zh:'早上和傍晚，电车非常拥挤。',
+   plain:'朝と夕方は、電車がとてもこみます。'},
+  {jp:'ホームでは、<ruby>順番<rt>じゅんばん</rt></ruby>に<ruby>並<rt>なら</rt></ruby>びます。',
+   ro:'Hōmu dewa, junban ni narabimasu.',
+   zh:'在站台上按顺序排队。',
+   plain:'ホームでは、順番に並びます。'},
+  {jp:'<ruby>電車<rt>でんしゃ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>では、<ruby>携帯電話<rt>けいたいでんわ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>してはいけません。',
+   ro:'Densha no naka dewa, keitaidenwa de hanashite wa ikemasen.',
+   zh:'在电车里不可以打手机。',
+   plain:'電車の中では、携帯電話で話してはいけません。'},
+  {jp:'<ruby>電話<rt>でんわ</rt></ruby>は、マナーモードにします。',
+   ro:'Denwa wa, manā-mōdo ni shimasu.',
+   zh:'手机要调成静音模式。',
+   plain:'電話は、マナーモードにします。'},
+  {jp:'<ruby>車内<rt>しゃない</rt></ruby>では、<ruby>大<rt>おお</rt></ruby>きい<ruby>声<rt>こえ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>しません。',
+   ro:'Shanai dewa, ōkii koe de hanashimasen.',
+   zh:'车厢里不大声说话。',
+   plain:'車内では、大きい声で話しません。'},
+  {jp:'<ruby>優先席<rt>ゆうせんせき</rt></ruby>には、お<ruby>年寄<rt>としよ</rt></ruby>りが<ruby>座<rt>すわ</rt></ruby>ります。',
+   ro:'Yūsenseki niwa, otoshiyori ga suwarimasu.',
+   zh:'优先席给老年人坐。',
+   plain:'優先席には、お年寄りが座ります。'},
+  {jp:'<ruby>若<rt>わか</rt></ruby>い<ruby>人<rt>ひと</rt></ruby>も、<ruby>席<rt>せき</rt></ruby>をゆずります。',
+   ro:'Wakai hito mo, seki o yuzurimasu.',
+   zh:'年轻人也会让座。',
+   plain:'若い人も、席をゆずります。'},
+  {jp:'<ruby>女性専用車<rt>じょせいせんようしゃ</rt></ruby>は、<ruby>女性<rt>じょせい</rt></ruby>だけの<ruby>車両<rt>しゃりょう</rt></ruby>です。',
+   ro:'Josei senyōsha wa, josei dake no sharyō desu.',
+   zh:'女性专用车厢是只有女性的车厢。',
+   plain:'女性専用車は、女性だけの車両です。'},
+  {jp:'かけ<ruby>込<rt>こ</rt></ruby>み<ruby>乗車<rt>じょうしゃ</rt></ruby>は、<ruby>危<rt>あぶ</rt></ruby>ないです。',
+   ro:'Kakekomi jōsha wa, abunai desu.',
+   zh:'赶着冲上车很危险。',
+   plain:'かけ込み乗車は、危ないです。'},
+  {jp:'<ruby>大<rt>おお</rt></ruby>きい<ruby>荷物<rt>にもつ</rt></ruby>は、ドアの<ruby>近<rt>ちか</rt></ruby>くに<ruby>置<rt>お</rt></ruby>きません。',
+   ro:'Ōkii nimotsu wa, doa no chikaku ni okimasen.',
+   zh:'大件行李不放在车门附近。',
+   plain:'大きい荷物は、ドアの近くに置きません。'},
+  {jp:'ごみは、ごみ<ruby>箱<rt>ばこ</rt></ruby>に<ruby>捨<rt>す</rt></ruby>てます。',
+   ro:'Gomi wa, gomibako ni sutemasu.',
+   zh:'垃圾扔进垃圾箱。',
+   plain:'ごみは、ごみ箱に捨てます。'},
+  {jp:'<ruby>降<rt>お</rt></ruby>りる<ruby>人<rt>ひと</rt></ruby>が<ruby>先<rt>さき</rt></ruby>です。',
+   ro:'Oriru hito ga saki desu.',
+   zh:'先下后上（下车的人优先）。',
+   plain:'降りる人が先です。'},
+  {jp:'<ruby>日本<rt>にほん</rt></ruby>の<ruby>電車<rt>でんしゃ</rt></ruby>は、<ruby>時間<rt>じかん</rt></ruby>に<ruby>正確<rt>せいかく</rt></ruby>です。',
+   ro:'Nihon no densha wa, jikan ni seikaku desu.',
+   zh:'日本的电车很准时。',
+   plain:'日本の電車は、時間に正確です。'},
+  {jp:'<ruby>私<rt>わたし</rt></ruby>も、<ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みたいです。',
+   ro:'Watashi mo, densha de hon o yomitai desu.',
+   zh:'我也想（像日本人那样）在电车上看书。',
+   plain:'私も、電車で本を読みたいです。'}
+];
+
+const VOCAB = [
+  {w:'電車', k:'でんしゃ', r:'densha', m:'电车。注意和「汽車（きしゃ）」区分，后者指蒸汽火车。'},
+  {w:'ホーム', k:'', r:'hōmu', m:'站台。来自英语 platform，日语只说 ホーム。'},
+  {w:'順番に', k:'じゅんばんに', r:'junban ni', m:'按顺序。ホームでは、順番に並びます＝站台上按顺序排队。'},
+  {w:'並びます', k:'ならびます', r:'narabimasu', m:'排队、排列。'},
+  {w:'携帯電話', k:'けいたいでんわ', r:'keitaidenwa', m:'手机。口语常说「携帯（けいたい）」或「スマホ」。'},
+  {w:'マナーモード', k:'', r:'manā-mōdo', m:'静音模式。日本车厢广播的高频词。'},
+  {w:'車内', k:'しゃない', r:'shanai', m:'车厢内。告示里常见「車内では…」。'},
+  {w:'優先席', k:'ゆうせんせき', r:'yūsenseki', m:'优先席（爱心专座）。孕妇、残障、高龄者等优先。'},
+  {w:'お年寄り', k:'おとしより', r:'otoshiyori', m:'老年人。比「老人」更礼貌的日常说法。'},
+  {w:'ゆずります', k:'', r:'yuzurimasu', m:'让（座位）。席をゆずる＝让座。'},
+  {w:'女性専用車', k:'じょせいせんようしゃ', r:'josei senyōsha', m:'女性专用车厢。多为通勤时段限定。'},
+  {w:'かけ込み乗車', k:'かけこみじょうしゃ', r:'kakekomi jōsha', m:'赶在关门时冲上车。日本明确提示危险、请勿为之。'},
+  {w:'荷物', k:'にもつ', r:'nimotsu', m:'行李、货物。'},
+  {w:'ごみ箱', k:'ごみばこ', r:'gomibako', m:'垃圾箱。站内和车厢内都设有。'},
+  {w:'正確（な）', k:'せいかく', r:'seikaku', m:'准确的、准时的。時間に正確＝守时。'}
+];
+
+const TABS = ['text','vocab','grammar','culture'];
+const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+
+/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
+function activate(id, silent){
+  if(TABS.indexOf(id) < 0) id = 'text';
+  TABS.forEach(function(p){
+    const sec = document.getElementById(p);
+    const tab = document.getElementById('tab-' + p);
+    const on = (p === id);
+    if(sec) sec.classList.toggle('active', on);
+    if(tab){
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.tabIndex = on ? 0 : -1;
+    }
+  });
+  if(!silent){
+    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
+    try{ history.replaceState(null, '', url); }
+    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
+  }
+  return id;
+}
+
+function currentTab(){
+  for(let i = 0; i < TABS.length; i++){
+    const t = document.getElementById('tab-' + TABS[i]);
+    if(t && t.getAttribute('aria-selected') === 'true') return i;
+  }
+  return 0;
+}
+
+/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
+function revealPanel(sec){
+  if(!sec) return;
+  const top = sec.getBoundingClientRect().top + window.pageYOffset;
+  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
+}
+
+TABS.forEach(function(p){
+  const tab = document.getElementById('tab-' + p);
+  if(!tab) return;
+  tab.addEventListener('click', function(){
+    activate(p);
+    revealPanel(document.getElementById(p));
+  });
+});
+
+document.querySelector('.tabbar').addEventListener('keydown', function(e){
+  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  e.preventDefault();
+  const i = currentTab();
+  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
+  const id = activate(TABS[next]);
+  document.getElementById('tab-' + id).focus();
+  revealPanel(document.getElementById(id));
+});
+
+window.addEventListener('hashchange', function(){
+  const h = (location.hash || '').replace('#', '');
+  if(TABS.indexOf(h) >= 0) activate(h, true);
+});
+
+/* ---------- 课文 ---------- */
+const art = document.getElementById('article');
+SENTS.forEach(function(s, i){
+  const n = i + 1;
+  const div = document.createElement('div');
+  div.className = 'sent';
+  div.innerHTML =
+    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
+    '<div class="s-body">' +
+      '<p class="jp" lang="ja">' + s.jp +
+        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
+          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
+        '</button>' +
+      '</p>' +
+      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
+      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
+    '</div>' +
+    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
+  art.appendChild(div);
+});
+
+/* ---------- 词汇（含"出现在第几句"反查号）---------- */
+function refSentence(w){
+  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
+  if(!key) return 0;
+  for(let i = 0; i < SENTS.length; i++){
+    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
+  }
+  return 0;
+}
+const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
+const vlist = document.getElementById('vocabList');
+VOCAB.forEach(function(v){
+  const ref = refSentence(v.w);
+  const li = document.createElement('li');
+  li.className = 'v-row';
+  li.innerHTML =
+    '<div class="v-top">' +
+      '<b class="v-w" lang="ja">' + v.w + '</b>' +
+      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
+      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
+      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
+    '</div>' +
+    '<div class="v-m">' + v.m + '</div>';
+  vlist.appendChild(li);
+});
+
+/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
+const btnZh = document.getElementById('btnZh');
+const btnRo = document.getElementById('btnRo');
+const zhState = SENTS.map(function(){ return false; });
+
+function setZh(i, on){
+  zhState[i] = on;
+  const box = document.getElementById('zh-' + (i + 1));
+  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
+  if(box) box.hidden = !on;
+  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+}
+function syncMaster(){
+  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
+  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
+  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
+  const any = zhState.some(Boolean);
+  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
+  btnZh.classList.toggle('on', any);
+}
+btnZh.onclick = function(){
+  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
+  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
+  syncMaster();
+};
+
+let roOn = false;
+btnRo.onclick = function(){
+  roOn = !roOn;
+  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
+  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
+  this.classList.toggle('on', roOn);
+};
+
+/* ---------- 朗读 ---------- */
+function speakJa(text, rate){
+  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
+}
+art.addEventListener('click', function(e){
+  const zt = e.target.closest('.zh-toggle');
+  if(zt){
+    const i = +zt.dataset.i;
+    setZh(i, !zhState[i]);
+    syncMaster();          // 逐句联动全局文案
+    return;
+  }
+  const snd = e.target.closest('.snd');
+  if(snd){
+    try{ speechSynthesis.cancel(); }catch(err){}
+    speakJa(SENTS[+snd.dataset.i].plain);
+  }
+});
+
+let playing = false;
+document.getElementById('btnAll').onclick = async function(){
+  if(playing){
+    try{ speechSynthesis.cancel(); }catch(e){}
+    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+    return;
+  }
+  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
+  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
+  for(const s of SENTS){
+    if(!playing) break;
+    await speakJa(s.plain, 0.85);
+    await new Promise(function(r){ setTimeout(r, 500); });
+  }
+  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
+};
+
+/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
+(function(){
+  const h = (location.hash || '').replace('#', '');
+  activate(TABS.indexOf(h) >= 0 ? h : 'text');
+})();
+</script>
+</body>
+</html>
