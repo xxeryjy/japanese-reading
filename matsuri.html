@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#E8E2D6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>夏祭りと花火｜日语初级阅读·文化篇 09</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="layout.css">
+</head>
+<body class="pg-article">
+<!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
+<script>document.documentElement.setAttribute('data-tabs','on');</script>
+
+<div class="wrap" data-piece="a9">
+
+  <header class="cover">
+    <h1 class="ja" lang="ja"><ruby>夏祭<rt>なつまつ</rt></ruby>りと<ruby>花火<rt>はなび</rt></ruby></h1>
+    <div class="meta">
+      <span class="tag">15 句 · 全假名注音</span>
+      <span class="tag">大家的日本语 第1–19课语法</span>
+    </div>
+    <p class="lead">七八月的日本，晚上到处是太鼓声和木屐声。穿上浴衣、去屋台买一份章鱼烧、在河边等花火——这篇用初级语法，把夏天的祭典走一遍。</p>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="文章分区">
+    <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
+    <span class="stamp" aria-hidden="true">09</span>
+    <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
+    <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
+    <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
+    <button role="tab" aria-selected="false" aria-controls="culture" id="tab-culture" tabindex="-1">文化</button>
+  </nav>
+
+  <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
+    <h2>课文</h2>
+    <div class="toolbar">
+      <button class="tbtn" id="btnZh" type="button" aria-pressed="false">中译</button>
+      <button class="tbtn" id="btnRo" type="button" aria-pressed="false">罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 朗读</button>
+      <span data-voice-slot></span>
+    </div>
+    <div id="article"></div>
+    <div id="quiz"></div>
+  </section>
+
+  <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
+    <h2>词汇表</h2>
+    <ul class="vocab" id="vocabList"></ul>
+  </section>
+
+  <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
+    <h2>语法点（对标《大家的日本语》）</h2>
+    <div id="verbTable"></div>
+    <div class="g-item">
+      <span class="g-form">〜たり〜たりします</span><span class="g-lesson">第19课</span>
+      <div class="g-ex">「食べ<b>たり</b>、金魚すくいをし<b>たり</b>します」。列举若干代表性动作，不强调顺序。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜たことがあります</span><span class="g-lesson">第19课</span>
+      <div class="g-ex">「見<b>たことがあります</b>か」。经验：「有过……」。否定是「〜たことがありません」。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜や〜（列举）</span><span class="g-lesson">第4课</span>
+      <div class="g-ex">「たこ焼き<b>や</b>焼きそば」。部分列举，常和 など 呼应。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜から〜まで</span><span class="g-lesson">第4课</span>
+      <div class="g-ex">「七月<b>から</b>八月<b>まで</b>」。时间、空间的起点和终点。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜を着ます</span><span class="g-lesson">第6课</span>
+      <div class="g-ex">「浴衣<b>を着ます</b>」。穿和服、浴衣用 着る；裤子、鞋用 はく。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜が あります</span><span class="g-lesson">第9课</span>
+      <div class="g-ex">「人気<b>が あります</b>」。表示拥有、存在。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜ことができます</span><span class="g-lesson">第18课</span>
+      <div class="g-ex">「帯を結ぶ<b>ことができませんでした</b>」。可能形之外更书面的说法。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
+    <h2>文化小知识</h2>
+    <div class="fact">
+      👘 <b>浴衣不是「便宜的和服」</b>：浴衣是木棉制、无里衬的夏季简装，价格和打理都比着物轻。穿法上有一个硬规矩——左襟压右襟（左前），右前是给故人穿的。
+    </div>
+    <div class="fact">
+      🏮 <b>屋台与盆踊</b>：祭典广场中央搭「櫓」，大家围着它跳盆踊；盆踊原本是盂兰盆节迎送祖先的舞，现在成了社区活动。
+    </div>
+    <div class="fact">
+      🎆 <b>隅田川花火</b>：始于 1733 年（江户享保年间），最初有为水神祭、慰灵和驱疫的意思。现在每年 7 月最后一个周六，约 2 万发、约 95 万人。
+    </div>
+    <div class="fact">
+      🗣️ <b>「たまや」「かぎや」</b>：看花火时喊的号子，来自江户时代两家有名的花火师屋号，不是随便的感叹词。
+    </div>
+    <details class="src">
+      <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
+      <p>东京都观光官方网站 GO TOKYO《東京の花火大会》；隅田川花火大会官网；着物着付的一般教则（左前／右前）；Web Japan 关于夏季祭典的介绍。本页日文课文为原创编写，仅使用上述公开文化事实。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <div class="cta-body">
+      <div class="cta-t">读完测一下</div>
+      <div class="cta-s">夏日祭这 15 个词，翻卡自测，只看这一篇。</div>
+    </div>
+    <a class="cta-btn" href="review.html?set=a9">测这 15 个词 →</a>
+  </div>
+
+</div>
+
+<script src="content.js"></script>
+<script src="voice.js"></script>
+<script src="article.js"></script>
+<script src="article-extras.js"></script>
+</body>
+</html>

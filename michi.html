@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#E8E2D6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日语阅读">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<title>道を聞く｜日语初级阅读·会話篇 11</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="layout.css">
+</head>
+<body class="pg-article">
+<!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
+<script>document.documentElement.setAttribute('data-tabs','on');</script>
+
+<div class="wrap" data-piece="a11">
+
+  <header class="cover">
+    <h1 class="ja" lang="ja"><ruby>道<rt>みち</rt></ruby>を<ruby>聞<rt>き</rt></ruby>く</h1>
+    <div class="meta">
+      <span class="tag">15 句 · 会話体</span>
+      <span class="tag">大家的日本语 第1–15课语法</span>
+    </div>
+    <p class="lead">问路最好用：一句话问出去，对方回你三句。这 15 句全是街上真会发生的对话。</p>
+  </header>
+
+  <nav class="tabbar" role="tablist" aria-label="文章分区">
+    <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
+    <span class="stamp" aria-hidden="true">11</span>
+    <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
+    <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
+    <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
+    <button role="tab" aria-selected="false" aria-controls="culture" id="tab-culture" tabindex="-1">文化</button>
+  </nav>
+
+  <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
+    <h2>课文</h2>
+    <div class="toolbar">
+      <button class="tbtn" id="btnZh" type="button" aria-pressed="false">中译</button>
+      <button class="tbtn" id="btnRo" type="button" aria-pressed="false">罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 朗读</button>
+      <span data-voice-slot></span>
+    </div>
+    <div id="article"></div>
+    <div id="quiz"></div>
+  </section>
+
+  <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
+    <h2>词汇表</h2>
+    <ul class="vocab" id="vocabList"></ul>
+  </section>
+
+  <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
+    <h2>语法点（对标《大家的日本语》）</h2>
+    <div id="verbTable"></div>
+    <div class="g-item">
+      <span class="g-form">〜てもいいですか</span><span class="g-lesson">第15课</span>
+      <div class="g-ex">「聞いて<b>もいいですか</b>」请求许可。回答：はい、いいですよ／すみません、ちょっと…</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜てください</span><span class="g-lesson">第14课</span>
+      <div class="g-ex">「まっすぐ行っ<b>てください</b>」请对方做某事。问路时对方几乎都用这个句型回你。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">どのくらい</span><span class="g-lesson">第11课</span>
+      <div class="g-ex">问时间、距离、数量：「歩いて<b>どのくらい</b>かかりますか」。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜ぐらい</span><span class="g-lesson">第11课</span>
+      <div class="g-ex">大约：「五分<b>ぐらい</b>です」。和「ごろ」（指时间点）不同，ぐらい 指量。</div>
+    </div>
+    <div class="g-item">
+      <span class="g-form">〜と（条件）／〜つ目</span><span class="g-lesson">看懂即可</span>
+      <div class="g-ex">「曲がる<b>と</b>、すぐ信号があります」（一拐就有）超出第 15 课范围；「二つ<b>目</b>の角」的「目」是序数后缀。这两处认得即可。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
+    <h2>问路的门道</h2>
+    <div class="fact">
+      🗺 <b>日本地址没有街道名</b>：日本住址是「町名＋番地＋建物名」，没有"XX 路 XX 号"这种写法。所以问路时日本人习惯用地标：「二つ目の角」「あのコンビニの先」。记路名没用，记地标才有用。
+    </div>
+    <div class="fact">
+      🚓 <b>交番是最实用的问路点</b>：街头的小警察岗亭叫「交番」。问路、丢东西、迷路都可以进去，是免费且一定有人值班的求助点。
+    </div>
+    <div class="fact">
+      🙇 <b>「すみません」是万能开场</b>：问路、叫店员、请人让一下，都先说「すみません」。不说直接开口，在日本会被认为唐突。
+    </div>
+    <details class="src">
+      <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
+      <p>日本警察庁「交番・駐在所」公开介绍；各自治体「住居表示制度」说明；本页日文课文为原创编写，会话场景依据上述公开制度常识，非真实人物对话。</p>
+    </details>
+  </section>
+
+  <div class="cta">
+    <div class="cta-body">
+      <div class="cta-t">读完测一下</div>
+      <div class="cta-s">这 15 个方向词，翻卡自测，只看这一篇。</div>
+    </div>
+    <a class="cta-btn" href="review.html?set=a11">测这 15 个词 →</a>
+  </div>
+
+</div>
+
+<script src="content.js"></script>
+<script src="voice.js"></script>
+<script src="article.js"></script>
+<script src="article-extras.js"></script>
+</body>
+</html>

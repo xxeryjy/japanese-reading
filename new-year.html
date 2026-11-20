@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#E8E2D6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
@@ -12,8 +12,7 @@
 <title>日本のお正月｜日语初级阅读·文化篇</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="common.css">
-<link rel="stylesheet" href="wabi.css">
-<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
+<link rel="stylesheet" href="layout.css">
 </head>
 <body class="pg-article">
 <!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
@@ -42,12 +41,13 @@
   <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
     <h2>课文</h2>
     <div class="toolbar">
-      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
-      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
-      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <button class="tbtn" id="btnZh" type="button" aria-pressed="false">中译</button>
+      <button class="tbtn" id="btnRo" type="button" aria-pressed="false">罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 朗读</button>
       <span data-voice-slot></span>
     </div>
     <div id="article"></div>
+    <div id="quiz"></div>
   </section>
 
   <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
@@ -57,6 +57,7 @@
 
   <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
     <h2>语法点（对标《大家的日本语》）</h2>
+    <div id="verbTable"></div>
     <div class="g-item">
       <span class="g-form">〜から〜まで</span><span class="g-lesson">第4课</span>
       <div class="g-ex">表示时间范围：<ruby>一月一日<rt>いちがつついたち</rt></ruby><b>から</b><ruby>三日<rt>みっか</rt></ruby><b>まで</b>、休みです。（从 1 月 1 日到 3 日放假。）</div>
@@ -127,259 +128,7 @@
 
 <script src="content.js"></script>
 <script src="voice.js"></script>
-<script>
-const SENTS = [
-  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>は、<ruby>日本<rt>にほん</rt></ruby>でとても<ruby>大切<rt>たいせつ</rt></ruby>な<ruby>日<rt>ひ</rt></ruby>です。',
-   ro:'Ichigatsu tsuitachi wa, Nihon de totemo taisetsu na hi desu.',
-   zh:'1 月 1 日，在日本是非常重要的日子。',
-   plain:'一月一日は、日本でとても大切な日です。'},
-  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>から<ruby>三日<rt>みっか</rt></ruby>まで、<ruby>学校<rt>がっこう</rt></ruby>も<ruby>会社<rt>かいしゃ</rt></ruby>も<ruby>休<rt>やす</rt></ruby>みです。',
-   ro:'Ichigatsu tsuitachi kara mikka made, gakkō mo kaisha mo yasumi desu.',
-   zh:'从 1 月 1 日到 3 日，学校和公司都放假。',
-   plain:'一月一日から三日まで、学校も会社も休みです。'},
-  {jp:'<ruby>十二月<rt>じゅうにがつ</rt></ruby>に、<ruby>家族<rt>かぞく</rt></ruby>や<ruby>友<rt>とも</rt></ruby>だちに<ruby>年賀状<rt>ねんがじょう</rt></ruby>を<ruby>送<rt>おく</rt></ruby>ります。',
-   ro:'Jūnigatsu ni, kazoku ya tomodachi ni nengajō o okurimasu.',
-   zh:'12 月，给家人和朋友寄贺年卡。',
-   plain:'十二月に、家族や友だちに年賀状を送ります。'},
-  {jp:'<ruby>一月一日<rt>いちがつついたち</rt></ruby>に、<ruby>家族<rt>かぞく</rt></ruby>と<ruby>一緒<rt>いっしょ</rt></ruby>にご<ruby>飯<rt>はん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。',
-   ro:'Ichigatsu tsuitachi ni, kazoku to issho ni gohan o tabemasu.',
-   zh:'1 月 1 日，和家人一起吃饭。',
-   plain:'一月一日に、家族と一緒にご飯を食べます。'},
-  {jp:'この<ruby>日<rt>ひ</rt></ruby>の<ruby>料理<rt>りょうり</rt></ruby>は「おせち<ruby>料理<rt>りょうり</rt></ruby>」です。',
-   ro:'Kono hi no ryōri wa "osechi-ryōri" desu.',
-   zh:'这一天的饭菜叫「御节料理」（年菜）。',
-   plain:'この日の料理は「おせち料理」です。'},
-  {jp:'おせち<ruby>料理<rt>りょうり</rt></ruby>の<ruby>一<rt>ひと</rt></ruby>つ<ruby>一<rt>ひと</rt></ruby>つに、<ruby>意味<rt>いみ</rt></ruby>があります。',
-   ro:'Osechi-ryōri no hitotsu hitotsu ni, imi ga arimasu.',
-   zh:'御节料理的每一样菜都有含义。',
-   plain:'おせち料理の一つ一つに、意味があります。'},
-  {jp:'<ruby>黒豆<rt>くろまめ</rt></ruby>は、まめに<ruby>働<rt>はたら</rt></ruby>くという<ruby>意味<rt>いみ</rt></ruby>です。',
-   ro:'Kuromame wa, mame ni hataraku to iu imi desu.',
-   zh:'黑豆是「勤快工作」的意思。',
-   plain:'黒豆は、まめに働くという意味です。'},
-  {jp:'<ruby>数<rt>かず</rt></ruby>の<ruby>子<rt>こ</rt></ruby>は、<ruby>子<rt>こ</rt></ruby>どもがたくさんという<ruby>意味<rt>いみ</rt></ruby>です。',
-   ro:'Kazunoko wa, kodomo ga takusan to iu imi desu.',
-   zh:'鲱鱼籽是「多子多孙」的意思。',
-   plain:'数の子は、子どもがたくさんという意味です。'},
-  {jp:'<ruby>一月<rt>いちがつ</rt></ruby>に、たくさんの<ruby>人<rt>ひと</rt></ruby>が<ruby>神社<rt>じんじゃ</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きます。',
-   ro:'Ichigatsu ni, takusan no hito ga jinja e ikimasu.',
-   zh:'1 月，很多人去神社。',
-   plain:'一月に、たくさんの人が神社へ行きます。'},
-  {jp:'それは「<ruby>初詣<rt>はつもうで</rt></ruby>」です。',
-   ro:'Sore wa "hatsumōde" desu.',
-   zh:'这就是「初诣」（新年的第一次参拜）。',
-   plain:'それは「初詣」です。'},
-  {jp:'<ruby>神社<rt>じんじゃ</rt></ruby>で、<ruby>今年<rt>ことし</rt></ruby>の<ruby>健康<rt>けんこう</rt></ruby>と<ruby>幸<rt>しあわ</rt></ruby>せをお<ruby>願<rt>ねが</rt></ruby>いします。',
-   ro:'Jinja de, kotoshi no kenkō to shiawase o onegai shimasu.',
-   zh:'在神社祈愿今年的健康与幸福。',
-   plain:'神社で、今年の健康と幸せをお願いします。'},
-  {jp:'<ruby>子<rt>こ</rt></ruby>どもたちは、お<ruby>年玉<rt>としだま</rt></ruby>をもらいます。',
-   ro:'Kodomo-tachi wa, otoshidama o moraimasu.',
-   zh:'孩子们会收到压岁钱。',
-   plain:'子どもたちは、お年玉をもらいます。'},
-  {jp:'お<ruby>年玉<rt>としだま</rt></ruby>で、お<ruby>菓子<rt>かし</rt></ruby>やゲームを<ruby>買<rt>か</rt></ruby>います。',
-   ro:'Otoshidama de, okashi ya gēmu o kaimasu.',
-   zh:'用压岁钱买点心或游戏。',
-   plain:'お年玉で、お菓子やゲームを買います。'},
-  {jp:'<ruby>日本<rt>にほん</rt></ruby>の<ruby>文化<rt>ぶんか</rt></ruby>は、とても<ruby>面白<rt>おもしろ</rt></ruby>いです。',
-   ro:'Nihon no bunka wa, totemo omoshiroi desu.',
-   zh:'日本的文化非常有趣。',
-   plain:'日本の文化は、とても面白いです。'},
-  {jp:'<ruby>来年<rt>らいねん</rt></ruby>、<ruby>私<rt>わたし</rt></ruby>はお<ruby>正月<rt>しょうがつ</rt></ruby>の<ruby>料理<rt>りょうり</rt></ruby>を<ruby>作<rt>つく</rt></ruby>りたいです。',
-   ro:'Rainen, watashi wa o-shōgatsu no ryōri o tsukuritai desu.',
-   zh:'明年，我想做一次御节料理。',
-   plain:'来年、私はお正月の料理を作りたいです。'}
-];
-
-/* 词汇表来自 content.js（全站唯一词表）：按本篇 id 过滤，字段映射到原渲染契约。 */
-const VOCAB = APP_DATA.words.filter(w => w.a === "a2").map(w => ({ w:w.ja, k:w.kana, r:w.r, m:w.m }));
-
-const TABS = ['text','vocab','grammar','culture'];
-const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
-
-/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
-function activate(id, silent){
-  if(TABS.indexOf(id) < 0) id = 'text';
-  TABS.forEach(function(p){
-    const sec = document.getElementById(p);
-    const tab = document.getElementById('tab-' + p);
-    const on = (p === id);
-    if(sec) sec.classList.toggle('active', on);
-    if(tab){
-      tab.setAttribute('aria-selected', on ? 'true' : 'false');
-      tab.tabIndex = on ? 0 : -1;
-    }
-  });
-  if(!silent){
-    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
-    try{ history.replaceState(null, '', url); }
-    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
-  }
-  return id;
-}
-
-function currentTab(){
-  for(let i = 0; i < TABS.length; i++){
-    const t = document.getElementById('tab-' + TABS[i]);
-    if(t && t.getAttribute('aria-selected') === 'true') return i;
-  }
-  return 0;
-}
-
-/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
-function revealPanel(sec){
-  if(!sec) return;
-  const top = sec.getBoundingClientRect().top + window.pageYOffset;
-  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
-}
-
-TABS.forEach(function(p){
-  const tab = document.getElementById('tab-' + p);
-  if(!tab) return;
-  tab.addEventListener('click', function(){
-    activate(p);
-    revealPanel(document.getElementById(p));
-  });
-});
-
-document.querySelector('.tabbar').addEventListener('keydown', function(e){
-  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  e.preventDefault();
-  const i = currentTab();
-  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
-  const id = activate(TABS[next]);
-  document.getElementById('tab-' + id).focus();
-  revealPanel(document.getElementById(id));
-});
-
-window.addEventListener('hashchange', function(){
-  const h = (location.hash || '').replace('#', '');
-  if(TABS.indexOf(h) >= 0) activate(h, true);
-});
-
-/* ---------- 课文 ---------- */
-const art = document.getElementById('article');
-SENTS.forEach(function(s, i){
-  const n = i + 1;
-  const div = document.createElement('div');
-  div.className = 'sent';
-  div.innerHTML =
-    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
-    '<div class="s-body">' +
-      '<p class="jp" lang="ja">' + s.jp +
-        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
-          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
-        '</button>' +
-      '</p>' +
-      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
-      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
-    '</div>' +
-    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
-  art.appendChild(div);
-});
-
-/* ---------- 词汇（含"出现在第几句"反查号）---------- */
-function refSentence(w){
-  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
-  if(!key) return 0;
-  for(let i = 0; i < SENTS.length; i++){
-    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
-  }
-  return 0;
-}
-const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
-const vlist = document.getElementById('vocabList');
-VOCAB.forEach(function(v){
-  const ref = refSentence(v.w);
-  const li = document.createElement('li');
-  li.className = 'v-row';
-  li.innerHTML =
-    '<div class="v-top">' +
-      '<b class="v-w" lang="ja">' + v.w + '</b>' +
-      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
-      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
-      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
-    '</div>' +
-    '<div class="v-m">' + v.m + '</div>';
-  vlist.appendChild(li);
-});
-
-/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
-const btnZh = document.getElementById('btnZh');
-const btnRo = document.getElementById('btnRo');
-const zhState = SENTS.map(function(){ return false; });
-
-function setZh(i, on){
-  zhState[i] = on;
-  const box = document.getElementById('zh-' + (i + 1));
-  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
-  if(box) box.hidden = !on;
-  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-}
-function syncMaster(){
-  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
-  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
-  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
-  const any = zhState.some(Boolean);
-  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
-  btnZh.classList.toggle('on', any);
-}
-btnZh.onclick = function(){
-  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
-  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
-  syncMaster();
-};
-
-let roOn = false;
-btnRo.onclick = function(){
-  roOn = !roOn;
-  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
-  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
-  this.classList.toggle('on', roOn);
-};
-
-/* ---------- 朗读 ---------- */
-function speakJa(text, rate){
-  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
-}
-art.addEventListener('click', function(e){
-  const zt = e.target.closest('.zh-toggle');
-  if(zt){
-    const i = +zt.dataset.i;
-    setZh(i, !zhState[i]);
-    syncMaster();          // 逐句联动全局文案
-    return;
-  }
-  const snd = e.target.closest('.snd');
-  if(snd){
-    try{ speechSynthesis.cancel(); }catch(err){}
-    speakJa(SENTS[+snd.dataset.i].plain);
-  }
-});
-
-let playing = false;
-document.getElementById('btnAll').onclick = async function(){
-  if(playing){
-    try{ speechSynthesis.cancel(); }catch(e){}
-    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-    return;
-  }
-  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
-  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
-  for(const s of SENTS){
-    if(!playing) break;
-    await speakJa(s.plain, 0.85);
-    await new Promise(function(r){ setTimeout(r, 500); });
-  }
-  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-};
-
-/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
-(function(){
-  const h = (location.hash || '').replace('#', '');
-  activate(TABS.indexOf(h) >= 0 ? h : 'text');
-})();
-</script>
-<script src="theme.js"></script>
+<script src="article.js"></script>
+<script src="article-extras.js"></script>
 </body>
 </html>

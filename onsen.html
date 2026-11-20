@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#E8E2D6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
@@ -12,8 +12,7 @@
 <title>日本の温泉｜日语初级阅读·文化篇 03</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="common.css">
-<link rel="stylesheet" href="wabi.css">
-<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
+<link rel="stylesheet" href="layout.css">
 </head>
 <body class="pg-article">
 <!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
@@ -42,12 +41,13 @@
   <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
     <h2>课文</h2>
     <div class="toolbar">
-      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
-      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
-      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <button class="tbtn" id="btnZh" type="button" aria-pressed="false">中译</button>
+      <button class="tbtn" id="btnRo" type="button" aria-pressed="false">罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 朗读</button>
       <span data-voice-slot></span>
     </div>
     <div id="article"></div>
+    <div id="quiz"></div>
   </section>
 
   <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
@@ -57,6 +57,7 @@
 
   <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
     <h2>语法点（对标《大家的日本语》）</h2>
+    <div id="verbTable"></div>
     <div class="g-item">
       <span class="g-form">〜てはいけません</span><span class="g-lesson">第15课</span>
       <div class="g-ex">表示禁止："不可以……"。体は、お湯の中で洗っ<b>てはいけません</b>。注意：这不是"不会"，而是规则上的不允许。</div>
@@ -116,259 +117,7 @@
 
 <script src="content.js"></script>
 <script src="voice.js"></script>
-<script>
-const SENTS = [
-  {jp:'<ruby>日本<rt>にほん</rt></ruby>には、<ruby>温泉<rt>おんせん</rt></ruby>がたくさんあります。',
-   ro:'Nihon niwa, onsen ga takusan arimasu.',
-   zh:'日本有很多温泉。',
-   plain:'日本には、温泉がたくさんあります。'},
-  {jp:'<ruby>日本<rt>にほん</rt></ruby>は<ruby>火山<rt>かざん</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い<ruby>国<rt>くに</rt></ruby>です。だから、<ruby>温泉<rt>おんせん</rt></ruby>も<ruby>多<rt>おお</rt></ruby>いです。',
-   ro:'Nihon wa kazan ga ōi kuni desu. Dakara, onsen mo ōi desu.',
-   zh:'日本是火山多的国家。所以温泉也很多。',
-   plain:'日本は火山が多い国です。だから、温泉も多いです。'},
-  {jp:'<ruby>温泉<rt>おんせん</rt></ruby>は<ruby>熱<rt>あつ</rt></ruby>いお<ruby>湯<rt>ゆ</rt></ruby>です。とても<ruby>気持<rt>きも</rt></ruby>ちがいいです。',
-   ro:'Onsen wa atsui o-yu desu. Totemo kimochi ga ii desu.',
-   zh:'温泉是热的水。非常舒服。',
-   plain:'温泉は熱いお湯です。とても気持ちがいいです。'},
-  {jp:'<ruby>日本人<rt>にほんじん</rt></ruby>は、<ruby>温泉<rt>おんせん</rt></ruby>が<ruby>大好<rt>だいす</rt></ruby>きです。',
-   ro:'Nihonjin wa, onsen ga daisuki desu.',
-   zh:'日本人非常喜欢温泉。',
-   plain:'日本人は、温泉が大好きです。'},
-  {jp:'でも、<ruby>温泉<rt>おんせん</rt></ruby>にはルールがあります。',
-   ro:'Demo, onsen niwa rūru ga arimasu.',
-   zh:'但是，温泉有规矩。',
-   plain:'でも、温泉にはルールがあります。'},
-  {jp:'まず、<ruby>体<rt>からだ</rt></ruby>を<ruby>洗<rt>あら</rt></ruby>います。それから、<ruby>温泉<rt>おんせん</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',
-   ro:'Mazu, karada o araimasu. Sorekara, onsen ni hairimasu.',
-   zh:'首先洗身体。然后进温泉。',
-   plain:'まず、体を洗います。それから、温泉に入ります。'},
-  {jp:'<ruby>体<rt>からだ</rt></ruby>は、お<ruby>湯<rt>ゆ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>洗<rt>あら</rt></ruby>ってはいけません。',
-   ro:'Karada wa, o-yu no naka de aratte wa ikemasen.',
-   zh:'不可以在水里洗身体。',
-   plain:'体は、お湯の中で洗ってはいけません。'},
-  {jp:'タオルは、お<ruby>湯<rt>ゆ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に<ruby>入<rt>い</rt></ruby>れてはいけません。<ruby>頭<rt>あたま</rt></ruby>や、お<ruby>湯<rt>ゆ</rt></ruby>の<ruby>外<rt>そと</rt></ruby>に<ruby>置<rt>お</rt></ruby>きます。',
-   ro:'Taoru wa, o-yu no naka ni irete wa ikemasen. Atama ya, o-yu no soto ni okimasu.',
-   zh:'毛巾不可以放进水里。放在头上，或者水外面。',
-   plain:'タオルは、お湯の中に入れてはいけません。頭や、お湯の外に置きます。'},
-  {jp:'<ruby>水着<rt>みずぎ</rt></ruby>を<ruby>着<rt>き</rt></ruby>て、<ruby>入<rt>はい</rt></ruby>ってはいけません。',
-   ro:'Mizugi o kite, haitte wa ikemasen.',
-   zh:'不可以穿泳衣进去。',
-   plain:'水着を着て、入ってはいけません。'},
-  {jp:'<ruby>長<rt>なが</rt></ruby>い<ruby>髪<rt>かみ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>は、<ruby>髪<rt>かみ</rt></ruby>を<ruby>上<rt>あ</rt></ruby>げます。',
-   ro:'Nagai kami no hito wa, kami o agemasu.',
-   zh:'头发长的人要把头发扎起来。',
-   plain:'長い髪の人は、髪を上げます。'},
-  {jp:'<ruby>露天風呂<rt>ろてんぶろ</rt></ruby>は、<ruby>外<rt>そと</rt></ruby>にあります。<ruby>空<rt>そら</rt></ruby>がきれいです。',
-   ro:'Rotenburo wa, soto ni arimasu. Sora ga kirei desu.',
-   zh:'露天温泉在外面。天空很美。',
-   plain:'露天風呂は、外にあります。空がきれいです。'},
-  {jp:'<ruby>旅館<rt>りょかん</rt></ruby>では、<ruby>夜<rt>よる</rt></ruby>も<ruby>朝<rt>あさ</rt></ruby>も<ruby>温泉<rt>おんせん</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。',
-   ro:'Ryokan dewa, yoru mo asa mo onsen ni hairimasu.',
-   zh:'在旅馆，晚上和早上都可以泡温泉。',
-   plain:'旅館では、夜も朝も温泉に入ります。'},
-  {jp:'<ruby>温泉<rt>おんせん</rt></ruby>は<ruby>体<rt>からだ</rt></ruby>にいいですが、<ruby>長<rt>なが</rt></ruby>い<ruby>時間<rt>じかん</rt></ruby><ruby>入<rt>はい</rt></ruby>ってはいけません。',
-   ro:'Onsen wa karada ni ii desu ga, nagai jikan haitte wa ikemasen.',
-   zh:'温泉对身体好，但不可以泡很长时间。',
-   plain:'温泉は体にいいですが、長い時間入ってはいけません。'},
-  {jp:'<ruby>温泉<rt>おんせん</rt></ruby>の<ruby>後<rt>あと</rt></ruby>で、<ruby>水<rt>みず</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みます。',
-   ro:'Onsen no ato de, mizu o nomimasu.',
-   zh:'泡完温泉后要喝水。',
-   plain:'温泉の後で、水を飲みます。'},
-  {jp:'<ruby>冬<rt>ふゆ</rt></ruby>の<ruby>温泉<rt>おんせん</rt></ruby>は、<ruby>特<rt>とく</rt></ruby>に<ruby>気持<rt>きも</rt></ruby>ちがいいです。いつか、<ruby>私<rt>わたし</rt></ruby>も<ruby>温泉<rt>おんせん</rt></ruby>に<ruby>行<rt>い</rt></ruby>きたいです。',
-   ro:'Fuyu no onsen wa, toku ni kimochi ga ii desu. Itsuka, watashi mo onsen ni ikitai desu.',
-   zh:'冬天的温泉特别舒服。总有一天，我也想去泡温泉。',
-   plain:'冬の温泉は、特に気持ちがいいです。いつか、私も温泉に行きたいです。'}
-];
-
-/* 词汇表来自 content.js（全站唯一词表）：按本篇 id 过滤，字段映射到原渲染契约。 */
-const VOCAB = APP_DATA.words.filter(w => w.a === "a3").map(w => ({ w:w.ja, k:w.kana, r:w.r, m:w.m }));
-
-const TABS = ['text','vocab','grammar','culture'];
-const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
-
-/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
-function activate(id, silent){
-  if(TABS.indexOf(id) < 0) id = 'text';
-  TABS.forEach(function(p){
-    const sec = document.getElementById(p);
-    const tab = document.getElementById('tab-' + p);
-    const on = (p === id);
-    if(sec) sec.classList.toggle('active', on);
-    if(tab){
-      tab.setAttribute('aria-selected', on ? 'true' : 'false');
-      tab.tabIndex = on ? 0 : -1;
-    }
-  });
-  if(!silent){
-    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
-    try{ history.replaceState(null, '', url); }
-    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
-  }
-  return id;
-}
-
-function currentTab(){
-  for(let i = 0; i < TABS.length; i++){
-    const t = document.getElementById('tab-' + TABS[i]);
-    if(t && t.getAttribute('aria-selected') === 'true') return i;
-  }
-  return 0;
-}
-
-/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
-function revealPanel(sec){
-  if(!sec) return;
-  const top = sec.getBoundingClientRect().top + window.pageYOffset;
-  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
-}
-
-TABS.forEach(function(p){
-  const tab = document.getElementById('tab-' + p);
-  if(!tab) return;
-  tab.addEventListener('click', function(){
-    activate(p);
-    revealPanel(document.getElementById(p));
-  });
-});
-
-document.querySelector('.tabbar').addEventListener('keydown', function(e){
-  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  e.preventDefault();
-  const i = currentTab();
-  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
-  const id = activate(TABS[next]);
-  document.getElementById('tab-' + id).focus();
-  revealPanel(document.getElementById(id));
-});
-
-window.addEventListener('hashchange', function(){
-  const h = (location.hash || '').replace('#', '');
-  if(TABS.indexOf(h) >= 0) activate(h, true);
-});
-
-/* ---------- 课文 ---------- */
-const art = document.getElementById('article');
-SENTS.forEach(function(s, i){
-  const n = i + 1;
-  const div = document.createElement('div');
-  div.className = 'sent';
-  div.innerHTML =
-    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
-    '<div class="s-body">' +
-      '<p class="jp" lang="ja">' + s.jp +
-        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
-          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
-        '</button>' +
-      '</p>' +
-      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
-      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
-    '</div>' +
-    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
-  art.appendChild(div);
-});
-
-/* ---------- 词汇（含"出现在第几句"反查号）---------- */
-function refSentence(w){
-  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
-  if(!key) return 0;
-  for(let i = 0; i < SENTS.length; i++){
-    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
-  }
-  return 0;
-}
-const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
-const vlist = document.getElementById('vocabList');
-VOCAB.forEach(function(v){
-  const ref = refSentence(v.w);
-  const li = document.createElement('li');
-  li.className = 'v-row';
-  li.innerHTML =
-    '<div class="v-top">' +
-      '<b class="v-w" lang="ja">' + v.w + '</b>' +
-      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
-      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
-      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
-    '</div>' +
-    '<div class="v-m">' + v.m + '</div>';
-  vlist.appendChild(li);
-});
-
-/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
-const btnZh = document.getElementById('btnZh');
-const btnRo = document.getElementById('btnRo');
-const zhState = SENTS.map(function(){ return false; });
-
-function setZh(i, on){
-  zhState[i] = on;
-  const box = document.getElementById('zh-' + (i + 1));
-  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
-  if(box) box.hidden = !on;
-  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-}
-function syncMaster(){
-  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
-  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
-  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
-  const any = zhState.some(Boolean);
-  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
-  btnZh.classList.toggle('on', any);
-}
-btnZh.onclick = function(){
-  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
-  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
-  syncMaster();
-};
-
-let roOn = false;
-btnRo.onclick = function(){
-  roOn = !roOn;
-  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
-  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
-  this.classList.toggle('on', roOn);
-};
-
-/* ---------- 朗读 ---------- */
-function speakJa(text, rate){
-  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
-}
-art.addEventListener('click', function(e){
-  const zt = e.target.closest('.zh-toggle');
-  if(zt){
-    const i = +zt.dataset.i;
-    setZh(i, !zhState[i]);
-    syncMaster();          // 逐句联动全局文案
-    return;
-  }
-  const snd = e.target.closest('.snd');
-  if(snd){
-    try{ speechSynthesis.cancel(); }catch(err){}
-    speakJa(SENTS[+snd.dataset.i].plain);
-  }
-});
-
-let playing = false;
-document.getElementById('btnAll').onclick = async function(){
-  if(playing){
-    try{ speechSynthesis.cancel(); }catch(e){}
-    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-    return;
-  }
-  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
-  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
-  for(const s of SENTS){
-    if(!playing) break;
-    await speakJa(s.plain, 0.85);
-    await new Promise(function(r){ setTimeout(r, 500); });
-  }
-  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-};
-
-/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
-(function(){
-  const h = (location.hash || '').replace('#', '');
-  activate(TABS.indexOf(h) >= 0 ? h : 'text');
-})();
-</script>
-<script src="theme.js"></script>
+<script src="article.js"></script>
+<script src="article-extras.js"></script>
 </body>
 </html>

@@ -4,15 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#E8E2D6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <title>日语初级阅读</title>
 <link rel="stylesheet" href="tokens.css">
-<link rel="stylesheet" href="wabi.css">
-<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
+<link rel="stylesheet" href="layout.css">
 <style>
 /* 本页只写布局与组件：颜色 / 字体 / 字号 / 间距 / 圆角全部来自 tokens.css（全站唯一真源）。
    R1 本页唯一 --brand 实底 = 今日卡里的「开始今日复习」。R6 本页无投影（卡片一律 1px --line + 留白分层）。 */
@@ -43,12 +42,6 @@ h1{margin:var(--s2) 0 0;font-size:clamp(1.5rem,7.8vw,2rem);font-weight:700;line-
 }
 .t-kicker{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--text-muted);}
 .t-big{display:flex;align-items:baseline;gap:var(--s2);margin-top:var(--s1);}
-.style-switch{display:flex;align-items:center;gap:8px;margin-top:22px;font-size:12px;}
-.ss-label{color:var(--text-muted);letter-spacing:.22em;font-size:11px;}
-.ss-opt{border:0;background:none;padding:2px 0;margin:0;font:inherit;font-size:12.5px;
-  color:var(--text-soft);cursor:pointer;letter-spacing:.12em;line-height:1.4;}
-.ss-opt[aria-pressed="true"]{color:var(--ink);border-bottom:1px solid var(--ink);}
-.ss-sep{color:var(--line-strong);font-size:11px;}
 .t-big b.is-empty{font-size:32px;line-height:1.5;color:var(--text-muted);letter-spacing:0;}
 .t-big b{font-size:40px;font-weight:700;line-height:1.1;color:var(--brand);font-variant-numeric:tabular-nums;}
 .t-big span{font-size:15px;font-weight:600;color:var(--text-soft);}
@@ -105,8 +98,8 @@ footer{margin-top:var(--s6);font-size:12px;color:var(--text-soft);line-height:1.
     <div class="t-big"><b id="dueN">—</b><span>个词到期</span></div>
     <div class="t-sub" id="dueSub">本机还没有记录，登录后会自动合并</div>
     <div class="t-prog">
-      <div class="t-prog-row">已掌握 <b id="masterN">0</b> / <span id="totalN">75</span></div>
-      <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="75" aria-valuenow="0" aria-label="已掌握进度"><i id="fill"></i></div>
+      <div class="t-prog-row">已掌握 <b id="masterN">0</b> / <span id="totalN">150</span></div>
+      <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="150" aria-valuenow="0" aria-label="已掌握进度"><i id="fill"></i></div>
     </div>
     <a class="t-btn" href="review.html">开始今日复习</a>
   </section>
@@ -119,14 +112,7 @@ footer{margin-top:var(--s6);font-size:12px;color:var(--text-soft);line-height:1.
     <span class="chev" aria-hidden="true">›</span>
   </a>
 
-  <div class="style-switch" role="group" aria-label="界面风格">
-    <span class="ss-label">风格</span>
-    <button class="ss-opt" type="button" data-theme-opt="washi" aria-pressed="false">和風</button>
-    <span class="ss-sep" aria-hidden="true">/</span>
-    <button class="ss-opt" type="button" data-theme-opt="wabi" aria-pressed="false">侘寂</button>
-  </div>
-
-  <footer>课文为原创编写，仅使用 JNTO、JVMA 等公开资料中的文化事实。</footer>
+  <footer>课文为原创编写，仅使用 JNTO、文部科学省、各自治体等公开资料中的事实。</footer>
 </div>
 <script src="vendor/workbuddy-cloud-sdk.js"></script>
 <script>
@@ -146,7 +132,7 @@ const WORDS75 = APP_DATA.words.map(w => w.ja);
 
 (function(){
   const KEY = 'jp_srs_v2';
-  const MASTER_AT = 3;
+  const MASTER_AT = 5;   // 必须与 review.html 一致
   const MAX_SESSION = 20;      // 与 review.html 的单次上限一致
   const SEC_PER_WORD = 6;      // 20 个词 ≈ 2 分钟，与复习页「约 2 分钟」对齐
   const $ = id => document.getElementById(id);
@@ -207,6 +193,5 @@ if('serviceWorker' in navigator && location.protocol === 'https:'){
   });
 }
 </script>
-<script src="theme.js"></script>
 </body>
 </html>

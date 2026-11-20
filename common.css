@@ -34,9 +34,9 @@ h1.ja{margin:0;font-family:var(--font-ja);font-size:clamp(1.5rem,7.8vw,2rem);fon
 h1.ja rt{font-size:.5em;}
 .meta{display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3);}
 .tag{padding:2px var(--s2);border-radius:var(--r-pill);background:var(--inset);color:var(--text-soft);font-size:12px;}
+/* 不再两行截断：13 篇导语全都会超，截出来的半句比封面高一点更难看 */
 .lead{
   margin:var(--s3) 0 0;font-size:15px;line-height:1.7;color:var(--text-soft);
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 
 /* ---------- 吸顶 tab（top 与 padding-top 双写：条的底色必须盖住刘海区）---------- */
@@ -191,10 +191,169 @@ mark{background:var(--mark);color:var(--ink);padding:0 3px;border-radius:var(--r
 }
 .cta-btn:active{background:var(--brand-press);}
 
+/* ---------- 注音三档（article-extras.js 写 data-ruby）----------
+   none   → 全部收起，点汉字临时看读音（.peek）
+   common → 小学一二年汉字收起（.rt-off 由 JS 判定后挂上）
+   两档都靠 display:none 收起，不占位、不抖动。 */
+html[data-ruby="none"] #article rt,
+html[data-ruby="none"] header.cover rt{display:none;}
+html[data-ruby="none"] #article ruby.peek rt{display:inline;}
+html[data-ruby="none"] #article ruby{cursor:pointer;}
+html[data-ruby="common"] ruby.rt-off rt{display:none;}
+
+/* ---------- 理解检测（课文切面底部）---------- */
+.quiz{
+  margin-top:var(--s5);padding-top:var(--s5);
+  border-top:1px solid var(--line);
+}
+.quiz h2{
+  margin:0 0 var(--s3);padding-bottom:var(--s2);
+  border-bottom:1px solid var(--line);
+  font-size:17px;font-weight:700;line-height:1.4;
+}
+.quiz-lead{margin:0 0 var(--s4);font-size:13px;line-height:1.7;color:var(--text-soft);}
+.q{padding-bottom:var(--s4);margin-bottom:var(--s4);border-bottom:1px solid var(--line);}
+.q:last-of-type{border-bottom:0;}
+.q-head{display:flex;gap:var(--s2);align-items:baseline;}
+.q-no{
+  flex:none;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--text-muted);font-variant-numeric:tabular-nums;
+}
+.q-text{
+  margin:0;font-family:var(--font-ja);font-size:15px;line-height:1.75;color:var(--ink);
+}
+.q-opts{display:flex;flex-direction:column;gap:var(--s1);margin-top:var(--s2);}
+/* 选项＝控件，靠边框认出：1px --line-control（≥3:1）；选中态用状态色描边 + tint 底，永不做实底 */
+.q-opt{
+  display:flex;align-items:center;gap:var(--s2);
+  width:100%;min-height:44px;padding:var(--s2) var(--s3);
+  border:1px solid var(--line-control);border-radius:var(--r-ctl);
+  background:var(--card);color:var(--ink);
+  font-family:var(--font-ja);font-size:14px;line-height:1.6;text-align:left;cursor:pointer;
+}
+.q-opt:active{background:var(--inset);}
+.q-k{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:var(--r-tag);
+  background:var(--inset);color:var(--text-soft);
+  font-family:var(--font-num);font-size:11px;font-weight:700;line-height:1;
+}
+.q-o{flex:1;min-width:0;}
+.q-opt[aria-checked="true"]{border-color:var(--ink);}
+.q-opt.ok{border-color:var(--ok);background:var(--ok-tint);color:var(--ok);}
+.q-opt.no{border-color:var(--no);background:var(--no-tint);color:var(--no);}
+.q-opt.ok .q-k,.q-opt.no .q-k{background:transparent;color:inherit;}
+.q-opt:disabled{cursor:default;opacity:1;}
+.q-opt:disabled:not(.ok):not(.no){color:var(--text-muted);border-color:var(--line);}
+.q-fb{
+  margin-top:var(--s2);padding-left:var(--s3);
+  border-left:3px solid var(--line);
+  font-size:13px;line-height:1.7;color:var(--text-soft);
+}
+.q-fb b{font-weight:700;}
+.fb-ok{color:var(--ok);}
+.fb-no{color:var(--no);}
+/* 成绩行：侘寂下不留方框，用一条发丝线与上面两道题分开 */
+.quiz-score{
+  padding:var(--s4) 0 0;
+  background:none;border:0;border-top:1px solid var(--line);border-radius:0;
+}
+.qs-line{font-size:14px;line-height:1.7;color:var(--text-soft);}
+.qs-line b{font-size:16px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+.qs-act{margin-top:var(--s3);}
+
+/* ---------- 动词活用表（语法切面顶部）----------
+   5 列在 375 会挤，改「一动词一块」的两行结构：上行辞書形+类型+义，下行三个变形。
+   篇色不进这里（篇色只许出现在 4 个合法位置）。 */
+.vh{
+  margin:var(--s1) 0 var(--s3);font-size:14px;font-weight:700;line-height:1.5;color:var(--ink);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2);
+}
+.vh-s{font-size:11.5px;font-weight:400;color:var(--text-muted);letter-spacing:.02em;}
+.vj-list{margin-bottom:var(--s4);}
+.vj{padding:var(--s3) 0;border-bottom:1px solid var(--line);}
+.vj:last-child{border-bottom:0;}
+.vj-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);}
+.vj-lab,.vj-forms i{
+  font-style:normal;font-size:11px;line-height:1;color:var(--text-muted);letter-spacing:.04em;
+}
+.vj-dict{font-family:var(--font-ja);font-size:17px;font-weight:700;color:var(--ink);}
+.vj-type{
+  padding:1px var(--s2);border-radius:var(--r-tag);
+  background:var(--inset);color:var(--text-soft);font-size:11.5px;
+}
+.vj-zh{font-size:13px;color:var(--text-soft);}
+.vj-forms{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);margin-top:var(--s1);}
+.vj-forms span{display:inline-flex;align-items:baseline;gap:var(--s1);}
+.vj-forms b{font-family:var(--font-ja);font-size:14px;font-weight:400;color:var(--ink);}
+.vj-note{margin:var(--s1) 0 0;font-size:12.5px;line-height:1.7;color:var(--text-soft);}
+
 @media (max-width:360px){
   .tabbar{gap:var(--s1);}
   .panel,header.cover,.cta{padding:var(--s4);}
+  .q-text{font-size:14px;}
+  .q-opt{font-size:13.5px;padding:var(--s2);}
+  .vj-forms{gap:var(--s2) var(--s3);}
 }
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto !important;}
+}
+
+/* ---------- 词汇表发音（article-extras.js 挂上去的 .v-snd）----------
+   44×44 热区，负 margin 把外框压到 20px，不撑高 .v-top 那 21px 行高。
+   侘寂下不画框：只有图标，和逐句 🔊 同款。 */
+.v-snd{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;margin:-12px -10px;padding:0;
+  border:0;background:none;cursor:pointer;align-self:center;
+}
+.v-snd svg{width:16px;height:16px;fill:var(--text-muted);}
+.v-snd:active svg{fill:var(--ink);}
+
+/* ---------- 点词查义（article.js）----------
+   不用浮层气泡：侘寂零投影，气泡没有阴影会糊在正文里。改成贴底的「查词条」——
+   与吸顶条对称，1px 上边线 + 卡面底，不画投影、不加遮罩。 */
+.lk{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:var(--card);
+  border-top:1px solid var(--line-control);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.lk-in{max-width:640px;margin:0 auto;padding:var(--s3) var(--s4);}
+.lk-top{display:flex;align-items:baseline;flex-wrap:wrap;gap:var(--s2);}
+.lk-w{font-family:var(--font-ja);font-size:19px;font-weight:700;color:var(--ink);}
+.lk-k{font-family:var(--font-ja);font-size:14px;color:var(--text-soft);}
+.lk-r{font-size:12px;color:var(--text-muted);}
+.lk-snd{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;margin:-12px -8px;padding:0;
+  border:0;background:none;cursor:pointer;align-self:center;
+}
+.lk-snd svg{width:16px;height:16px;fill:var(--text-muted);}
+.lk-snd:active svg{fill:var(--ink);}
+.lk-x{
+  flex:none;margin-left:auto;align-self:center;
+  width:44px;height:44px;margin-top:-12px;margin-bottom:-12px;padding:0;
+  border:0;background:none;cursor:pointer;
+  font-family:var(--font-num);font-size:18px;line-height:1;color:var(--text-muted);
+}
+.lk-x:active{color:var(--ink);}
+.lk-m{margin:var(--s1) 0 0;font-size:13.5px;line-height:1.7;color:var(--text-soft);}
+
+/* 首次使用的提示：一行小字，点一下任意处就消失 */
+.lk-tip{margin:0 0 var(--s3);font-size:11px;letter-spacing:.06em;color:var(--text-muted);}
+
+/* 深链接命中句：闪一下高亮再退回。用 --mark 而不是描边——描边会和 .sent 的
+   border-bottom 发丝线混在一起，看不出来是哪一句。 */
+.sent{transition:background-color .35s;}
+.sent.hl{background:var(--mark);}
+
+/* 会話体的说话人标记（A / B）
+   必须用伪元素：点词查义靠「可见字符偏移」定位，插真实文本节点会让整句错位。
+   伪元素不属于 DOM 文本节点，TreeWalker 看不到它，所以偏移不受影响。 */
+.jp[data-sp]::before{
+  content:attr(data-sp);
+  display:inline-block;min-width:14px;margin-right:var(--s1);
+  font-family:var(--font-num);font-size:11px;font-weight:700;
+  color:var(--text-muted);letter-spacing:.04em;vertical-align:.08em;
 }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1e3a5f">
+<meta name="theme-color" content="#E8E2D6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
@@ -12,8 +12,7 @@
 <title>電車のマナー｜日语初级阅读·生活篇 05</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="common.css">
-<link rel="stylesheet" href="wabi.css">
-<script>try{var t=localStorage.getItem("jr_theme");if(t==="wabi")document.documentElement.setAttribute("data-theme","wabi");}catch(e){}</script>
+<link rel="stylesheet" href="layout.css">
 </head>
 <body class="pg-article">
 <!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
@@ -42,12 +41,13 @@
   <section class="panel active" id="text" role="tabpanel" aria-labelledby="tab-text">
     <h2>课文</h2>
     <div class="toolbar">
-      <button class="tbtn" id="btnZh" type="button">显示全部中译</button>
-      <button class="tbtn" id="btnRo" type="button">显示罗马音</button>
-      <button class="tbtn" id="btnAll" type="button">▶ 全文朗读</button>
+      <button class="tbtn" id="btnZh" type="button" aria-pressed="false">中译</button>
+      <button class="tbtn" id="btnRo" type="button" aria-pressed="false">罗马音</button>
+      <button class="tbtn" id="btnAll" type="button">▶ 朗读</button>
       <span data-voice-slot></span>
     </div>
     <div id="article"></div>
+    <div id="quiz"></div>
   </section>
 
   <section class="panel" id="vocab" role="tabpanel" aria-labelledby="tab-vocab">
@@ -57,6 +57,7 @@
 
   <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
     <h2>语法点（对标《大家的日本语》）</h2>
+    <div id="verbTable"></div>
     <div class="g-item">
       <span class="g-form">〜てはいけません</span><span class="g-lesson">第15课</span>
       <div class="g-ex">禁止：電車の中で、携帯電話で話し<b>てはいけません</b>。这是车厢广播和告示最常用的句型。</div>
@@ -115,259 +116,7 @@
 
 <script src="content.js"></script>
 <script src="voice.js"></script>
-<script>
-const SENTS = [
-  {jp:'<ruby>日本<rt>にほん</rt></ruby>では、<ruby>電車<rt>でんしゃ</rt></ruby>がとても<ruby>便利<rt>べんり</rt></ruby>です。',
-   ro:'Nihon dewa, densha ga totemo benri desu.',
-   zh:'在日本，电车非常方便。',
-   plain:'日本では、電車がとても便利です。'},
-  {jp:'<ruby>朝<rt>あさ</rt></ruby>と<ruby>夕方<rt>ゆうがた</rt></ruby>は、<ruby>電車<rt>でんしゃ</rt></ruby>がとてもこみます。',
-   ro:'Asa to yūgata wa, densha ga totemo komimasu.',
-   zh:'早上和傍晚，电车非常拥挤。',
-   plain:'朝と夕方は、電車がとてもこみます。'},
-  {jp:'ホームでは、<ruby>順番<rt>じゅんばん</rt></ruby>に<ruby>並<rt>なら</rt></ruby>びます。',
-   ro:'Hōmu dewa, junban ni narabimasu.',
-   zh:'在站台上按顺序排队。',
-   plain:'ホームでは、順番に並びます。'},
-  {jp:'<ruby>電車<rt>でんしゃ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>では、<ruby>携帯電話<rt>けいたいでんわ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>してはいけません。',
-   ro:'Densha no naka dewa, keitaidenwa de hanashite wa ikemasen.',
-   zh:'在电车里不可以打手机。',
-   plain:'電車の中では、携帯電話で話してはいけません。'},
-  {jp:'<ruby>電話<rt>でんわ</rt></ruby>は、マナーモードにします。',
-   ro:'Denwa wa, manā-mōdo ni shimasu.',
-   zh:'手机要调成静音模式。',
-   plain:'電話は、マナーモードにします。'},
-  {jp:'<ruby>車内<rt>しゃない</rt></ruby>では、<ruby>大<rt>おお</rt></ruby>きい<ruby>声<rt>こえ</rt></ruby>で<ruby>話<rt>はな</rt></ruby>しません。',
-   ro:'Shanai dewa, ōkii koe de hanashimasen.',
-   zh:'车厢里不大声说话。',
-   plain:'車内では、大きい声で話しません。'},
-  {jp:'<ruby>優先席<rt>ゆうせんせき</rt></ruby>には、お<ruby>年寄<rt>としよ</rt></ruby>りが<ruby>座<rt>すわ</rt></ruby>ります。',
-   ro:'Yūsenseki niwa, otoshiyori ga suwarimasu.',
-   zh:'优先席给老年人坐。',
-   plain:'優先席には、お年寄りが座ります。'},
-  {jp:'<ruby>若<rt>わか</rt></ruby>い<ruby>人<rt>ひと</rt></ruby>も、<ruby>席<rt>せき</rt></ruby>をゆずります。',
-   ro:'Wakai hito mo, seki o yuzurimasu.',
-   zh:'年轻人也会让座。',
-   plain:'若い人も、席をゆずります。'},
-  {jp:'<ruby>女性専用車<rt>じょせいせんようしゃ</rt></ruby>は、<ruby>女性<rt>じょせい</rt></ruby>だけの<ruby>車両<rt>しゃりょう</rt></ruby>です。',
-   ro:'Josei senyōsha wa, josei dake no sharyō desu.',
-   zh:'女性专用车厢是只有女性的车厢。',
-   plain:'女性専用車は、女性だけの車両です。'},
-  {jp:'かけ<ruby>込<rt>こ</rt></ruby>み<ruby>乗車<rt>じょうしゃ</rt></ruby>は、<ruby>危<rt>あぶ</rt></ruby>ないです。',
-   ro:'Kakekomi jōsha wa, abunai desu.',
-   zh:'赶着冲上车很危险。',
-   plain:'かけ込み乗車は、危ないです。'},
-  {jp:'<ruby>大<rt>おお</rt></ruby>きい<ruby>荷物<rt>にもつ</rt></ruby>は、ドアの<ruby>近<rt>ちか</rt></ruby>くに<ruby>置<rt>お</rt></ruby>きません。',
-   ro:'Ōkii nimotsu wa, doa no chikaku ni okimasen.',
-   zh:'大件行李不放在车门附近。',
-   plain:'大きい荷物は、ドアの近くに置きません。'},
-  {jp:'ごみは、ごみ<ruby>箱<rt>ばこ</rt></ruby>に<ruby>捨<rt>す</rt></ruby>てます。',
-   ro:'Gomi wa, gomibako ni sutemasu.',
-   zh:'垃圾扔进垃圾箱。',
-   plain:'ごみは、ごみ箱に捨てます。'},
-  {jp:'<ruby>降<rt>お</rt></ruby>りる<ruby>人<rt>ひと</rt></ruby>が<ruby>先<rt>さき</rt></ruby>です。',
-   ro:'Oriru hito ga saki desu.',
-   zh:'先下后上（下车的人优先）。',
-   plain:'降りる人が先です。'},
-  {jp:'<ruby>日本<rt>にほん</rt></ruby>の<ruby>電車<rt>でんしゃ</rt></ruby>は、<ruby>時間<rt>じかん</rt></ruby>に<ruby>正確<rt>せいかく</rt></ruby>です。',
-   ro:'Nihon no densha wa, jikan ni seikaku desu.',
-   zh:'日本的电车很准时。',
-   plain:'日本の電車は、時間に正確です。'},
-  {jp:'<ruby>私<rt>わたし</rt></ruby>も、<ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>本<rt>ほん</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みたいです。',
-   ro:'Watashi mo, densha de hon o yomitai desu.',
-   zh:'我也想（像日本人那样）在电车上看书。',
-   plain:'私も、電車で本を読みたいです。'}
-];
-
-/* 词汇表来自 content.js（全站唯一词表）：按本篇 id 过滤，字段映射到原渲染契约。 */
-const VOCAB = APP_DATA.words.filter(w => w.a === "a5").map(w => ({ w:w.ja, k:w.kana, r:w.r, m:w.m }));
-
-const TABS = ['text','vocab','grammar','culture'];
-const SND_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
-
-/* ---------- 切面：replaceState（不是 pushState：4 个切面不是 4 个页面）---------- */
-function activate(id, silent){
-  if(TABS.indexOf(id) < 0) id = 'text';
-  TABS.forEach(function(p){
-    const sec = document.getElementById(p);
-    const tab = document.getElementById('tab-' + p);
-    const on = (p === id);
-    if(sec) sec.classList.toggle('active', on);
-    if(tab){
-      tab.setAttribute('aria-selected', on ? 'true' : 'false');
-      tab.tabIndex = on ? 0 : -1;
-    }
-  });
-  if(!silent){
-    const url = (id === 'text') ? (location.pathname + location.search) : ('#' + id);
-    try{ history.replaceState(null, '', url); }
-    catch(e){ /* file:// 直接打开时可能禁止改 URL；切面本身仍然生效 */ }
-  }
-  return id;
-}
-
-function currentTab(){
-  for(let i = 0; i < TABS.length; i++){
-    const t = document.getElementById('tab-' + TABS[i]);
-    if(t && t.getAttribute('aria-selected') === 'true') return i;
-  }
-  return 0;
-}
-
-/* 已滚过目标 panel 顶部才滚，否则不动；scroll-margin-top 已扣掉吸顶条高度 */
-function revealPanel(sec){
-  if(!sec) return;
-  const top = sec.getBoundingClientRect().top + window.pageYOffset;
-  if(window.pageYOffset > top - 8) sec.scrollIntoView({block:'start'});
-}
-
-TABS.forEach(function(p){
-  const tab = document.getElementById('tab-' + p);
-  if(!tab) return;
-  tab.addEventListener('click', function(){
-    activate(p);
-    revealPanel(document.getElementById(p));
-  });
-});
-
-document.querySelector('.tabbar').addEventListener('keydown', function(e){
-  if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-  e.preventDefault();
-  const i = currentTab();
-  const next = (i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length;
-  const id = activate(TABS[next]);
-  document.getElementById('tab-' + id).focus();
-  revealPanel(document.getElementById(id));
-});
-
-window.addEventListener('hashchange', function(){
-  const h = (location.hash || '').replace('#', '');
-  if(TABS.indexOf(h) >= 0) activate(h, true);
-});
-
-/* ---------- 课文 ---------- */
-const art = document.getElementById('article');
-SENTS.forEach(function(s, i){
-  const n = i + 1;
-  const div = document.createElement('div');
-  div.className = 'sent';
-  div.innerHTML =
-    '<span class="sn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
-    '<div class="s-body">' +
-      '<p class="jp" lang="ja">' + s.jp +
-        '<button class="zh-toggle" type="button" data-i="' + i + '" aria-expanded="false" aria-controls="zh-' + n + '">' +
-          '<span class="chip" aria-hidden="true">译</span><span class="sr">第 ' + n + ' 句中译</span>' +
-        '</button>' +
-      '</p>' +
-      '<p class="ro" id="ro-' + n + '" lang="ja-Latn" hidden>' + s.ro + '</p>' +
-      '<p class="zh" id="zh-' + n + '" lang="zh-CN" hidden>' + s.zh + '</p>' +
-    '</div>' +
-    '<button class="snd" type="button" data-i="' + i + '" aria-label="朗读第 ' + n + ' 句" title="朗读本句">' + SND_SVG + '</button>';
-  art.appendChild(div);
-});
-
-/* ---------- 词汇（含"出现在第几句"反查号）---------- */
-function refSentence(w){
-  const key = String(w).replace(/（.*?）/g, '').replace(/[〜~]/g, '');
-  if(!key) return 0;
-  for(let i = 0; i < SENTS.length; i++){
-    if(SENTS[i].plain.indexOf(key) >= 0) return i + 1;
-  }
-  return 0;
-}
-const circled = function(n){ return String.fromCharCode(0x2460 + n - 1); };   // ①…⑳
-const vlist = document.getElementById('vocabList');
-VOCAB.forEach(function(v){
-  const ref = refSentence(v.w);
-  const li = document.createElement('li');
-  li.className = 'v-row';
-  li.innerHTML =
-    '<div class="v-top">' +
-      '<b class="v-w" lang="ja">' + v.w + '</b>' +
-      (v.k ? '<span class="v-k" lang="ja">' + v.k + '</span>' : '') +
-      '<span class="v-r" lang="ja-Latn">' + v.r + '</span>' +
-      (ref ? '<span class="v-ref" title="出现在第 ' + ref + ' 句">' + circled(ref) + '</span>' : '') +
-    '</div>' +
-    '<div class="v-m">' + v.m + '</div>';
-  vlist.appendChild(li);
-});
-
-/* ---------- 中译：逐句 > 全局（全局是批量写一次，不是持续绑定）---------- */
-const btnZh = document.getElementById('btnZh');
-const btnRo = document.getElementById('btnRo');
-const zhState = SENTS.map(function(){ return false; });
-
-function setZh(i, on){
-  zhState[i] = on;
-  const box = document.getElementById('zh-' + (i + 1));
-  const btn = art.querySelector('.zh-toggle[data-i="' + i + '"]');
-  if(box) box.hidden = !on;
-  if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-}
-function syncMaster(){
-  // 文案描述"这个按钮按下去会做什么"：有任意一展开 → 隐藏全部；一个都没开 → 显示全部。
-  // （§6.3 写的是"全部展开才显示隐藏全部"，§9.9 与验收项是"单句展开即变隐藏全部"——按后者，
-  //  否则单句展开后按钮写着"显示全部中译"却是要全关，语义相反。）
-  const any = zhState.some(Boolean);
-  btnZh.textContent = any ? '隐藏全部中译' : '显示全部中译';
-  btnZh.classList.toggle('on', any);
-}
-btnZh.onclick = function(){
-  const target = !zhState.some(Boolean);   // 一个都没开 → 全开；有开着的 → 全关；永不出现"部分"文案
-  for(let i = 0; i < SENTS.length; i++) setZh(i, target);
-  syncMaster();
-};
-
-let roOn = false;
-btnRo.onclick = function(){
-  roOn = !roOn;
-  art.querySelectorAll('.ro').forEach(function(el){ el.hidden = !roOn; });
-  this.textContent = roOn ? '隐藏罗马音' : '显示罗马音';
-  this.classList.toggle('on', roOn);
-};
-
-/* ---------- 朗读 ---------- */
-function speakJa(text, rate){
-  return (window.JPVoice ? JPVoice.speak(text, rate) : Promise.resolve());
-}
-art.addEventListener('click', function(e){
-  const zt = e.target.closest('.zh-toggle');
-  if(zt){
-    const i = +zt.dataset.i;
-    setZh(i, !zhState[i]);
-    syncMaster();          // 逐句联动全局文案
-    return;
-  }
-  const snd = e.target.closest('.snd');
-  if(snd){
-    try{ speechSynthesis.cancel(); }catch(err){}
-    speakJa(SENTS[+snd.dataset.i].plain);
-  }
-});
-
-let playing = false;
-document.getElementById('btnAll').onclick = async function(){
-  if(playing){
-    try{ speechSynthesis.cancel(); }catch(e){}
-    playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-    return;
-  }
-  playing = true; this.textContent = '⏸ 停止'; this.classList.add('on');
-  if(!zhState.some(Boolean)) btnZh.click();     // 朗读时把中译展开（已有展开的就保持原样）
-  for(const s of SENTS){
-    if(!playing) break;
-    await speakJa(s.plain, 0.85);
-    await new Promise(function(r){ setTimeout(r, 500); });
-  }
-  playing = false; this.textContent = '▶ 全文朗读'; this.classList.remove('on');
-};
-
-/* ---------- 首帧按 hash 激活（无 hash / 非法 hash → #text，并清掉 URL）---------- */
-(function(){
-  const h = (location.hash || '').replace('#', '');
-  activate(TABS.indexOf(h) >= 0 ? h : 'text');
-})();
-</script>
-<script src="theme.js"></script>
+<script src="article.js"></script>
+<script src="article-extras.js"></script>
 </body>
 </html>

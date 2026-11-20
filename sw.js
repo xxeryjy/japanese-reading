@@ -15,12 +15,13 @@
  *   其它（manifest.webmanifest 等）不拦截，走浏览器默认 —— 保证清单永远是最新的。
  */
 
-const VERSION = 'v5';
+const VERSION = 'v23';
 const CACHE = 'jp-read-' + VERSION;
 
-/* 预缓存：8 个 HTML + tokens.css + voice.js + cloud.js + vendor 的云 SDK + 3 个图标 = 15 项。
+/* 预缓存：13 个 HTML + 7 个 css/js + vendor 云 SDK + 3 个图标 = 24 项。
    vendor/workbuddy-cloud-sdk.js 一并预缓存：避免离线时 cloud.js 轮询 9 秒（60×150ms）
-   才落到云端错误态，那 9 秒会让用户以为页面卡死。 */
+   才落到云端错误态，那 9 秒会让用户以为页面卡死。
+   article-extras.js（注音三档 / 理解检测 / 动词活用表）必须在列 —— 漏了会 nav 成功但功能全空。 */
 const PRECACHE = [
   './index.html',
   './reading.html',
@@ -30,12 +31,21 @@ const PRECACHE = [
   './onsen.html',
   './konbini.html',
   './train.html',
+  './sakura.html',
+  './school.html',
+  './gomi.html',
+  './matsuri.html',
+  './fuji.html',
+  './michi.html',
+  './nikki.html',
+  './chirashi.html',
   './tokens.css',
   './common.css',
-  './wabi.css',
+  './layout.css',
   './content.js',
-  './theme.js',
   './voice.js',
+  './article.js',
+  './article-extras.js',
   './cloud.js',
   './vendor/workbuddy-cloud-sdk.js',
   './icon-180.png',
@@ -46,7 +56,7 @@ const PRECACHE = [
 const ORIGIN = self.location.origin;
 const INDEX_URL = new URL('./index.html', self.location.href).href;
 
-/* ---------- 安装：一次性把 14 项写进缓存 ---------- */
+/* ---------- 安装：一次性把 PRECACHE 全部写进缓存 ---------- */
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
