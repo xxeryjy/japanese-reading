@@ -214,7 +214,7 @@
 | ② 理解检测 | 课文切面底部，2 题四选一 | `content.js` → `articles[].quiz[]` | `localStorage['jp_quiz_v1']` |
 | ③ 动词活用表 | 语法切面顶部 | `content.js` → `articles[].verbs[]` | 无 |
 | ④ 词汇表发音 | 词汇切面每条的 🔊 | `content.js` → `words[].kana` | 无 |
-| ⑤ 縦書き切换 | 工具行「縦書き / 横書き」 | 无 | 无（不持久化） |
+| ⑤ 縦書き切换 | 工具行「縦書き / 横書き」，**WebKit 上不提供** | 无 | 无（不持久化） |
 
 ### 12.1 注音三档
 
@@ -376,3 +376,18 @@
 **为什么必须是伪元素**：点词查义按「可见字符偏移」定位，插一个真实文本节点会让整句偏移整体错位。伪元素内容不属于 DOM 文本节点，`TreeWalker` 看不到它，偏移不受影响。
 
 同理，标记不能挂在 `.s-body` 上——那样 `::before` 会在块级 `.jp` 上方另起一行，把整页撑高。这两点都是实测踩出来的。
+
+### 17.3 縦書き 为什么在 iOS 上关掉了（2026-11-20）
+
+iPhone 实测：竖排模式下**字符互相压字、列与列叠在一起**。关键线索是纯假名的句子（无注音）同样复现，所以不是 ruby 的问题，是 WebKit 没把竖排的列宽算出来。
+
+试过 `width:max-content`（显式把列宽交给内容，Chrome 上本来就是对的）——**iOS 仍然不行**。说明这不是布局参数能绕过的实现缺陷。
+
+处理：`article-extras.js` 的 `verticalUnsupported()` 在 **iOS / iPadOS / macOS Safari** 上直接不挂这个按钮（连按钮都不出现，而不是给一个显示错乱的功能）。Android / 桌面 Chromium 保留。
+
+判断依据写死成 UA 检测，因为这是引擎缺陷而不是能力检测：
+- `/iPad|iPhone|iPod/` → iOS 全家（CriOS/FxiOS 底层也是 WebKit）
+- `MacIntel` + `maxTouchPoints > 1` → iPadOS 13+ 装成 Mac
+- `Safari` 且不含 `Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS` → macOS Safari
+
+**这是一个"没有 iOS 测试环境"的直接代价**：同一份 CSS 在 Chrome 正确、在 WebKit 错误，盲改两轮无效后，宁可少一个功能也不留一个坏掉的功能。

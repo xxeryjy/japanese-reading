@@ -173,7 +173,21 @@
   /* ================= ⑤ 縦書き / 横書き =================
      原先挂在 theme.js 里（随主题开关一起注入），双主题下线后搬到这里。
      竖排的版式全在 layout.css 的 #text[data-writing="v"] 段，这里只切状态。 */
+  /* WebKit（Safari / iOS 所有浏览器）的 vertical-rl 列宽计算有 bug：
+     列宽退化成一条线，字符互相压字、列与列叠在一起（iPhone 实测，纯假名句子同样复现，
+     所以不是注音的问题）。显式 width:max-content 也没修好，说明不是布局参数能绕过的。
+     结论：在 WebKit 上不提供竖排，而不是给一个显示错乱的功能。 */
+  function verticalUnsupported() {
+    const ua = navigator.userAgent || '';
+    if (/iPad|iPhone|iPod/.test(ua)) return true;                 // iOS 全家（Chrome/Firefox 也是 WebKit）
+    if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;  // iPadOS 13+ 装成 Mac
+    /* macOS Safari：同一套 WebKit 实现，未逐一验证，按不支持处理更稳妥 */
+    if (/Safari/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/.test(ua)) return true;
+    return false;
+  }
+
   function mountVertical() {
+    if (verticalUnsupported()) return;
     const bar = doc.querySelector('.toolbar');
     const panel = doc.getElementById('text');
     if (!bar || !panel || doc.getElementById('btnVertical')) return;
