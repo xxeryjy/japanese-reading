@@ -252,6 +252,7 @@
     const art = $('article');
     if (!art) return;
     art.addEventListener('click', function (e) {
+      if (vertical) return;                 // 竖排是自绘的格子，没有可换算的文本节点
       /* 「译」按钮和朗读键有自己的活，不抢 */
       if (e.target.closest && (e.target.closest('.zh-toggle') || e.target.closest('.snd'))) return;
       const jp = e.target.closest ? e.target.closest('.jp') : null;
@@ -299,6 +300,146 @@
   }
 
   /* ================= 课文渲染 ================= */
+  /* ================= 縦書き（自绘，不用 writing-mode） =================
+   *
+   * 为什么不用 CSS writing-mode：iOS Safari 的 vertical-rl 列宽算不出来，
+   * 字符互相压字、列与列叠在一起（纯假名的句子同样复现，所以不是注音的问题）。
+   * 显式 width:max-content 也无效 → 不是布局参数能绕过的引擎缺陷。
+   *
+   * 所以这里把竖排「自己画」：每个字是一个普通块，靠 flex 纵向排列。
+   * 完全不依赖竖排文字特性，任何引擎结果都一样，也就能在本机验完再发。
+   *
+   * 结构（一句可以有多个竖列，长句折列，从右往左）：
+   *   .vrow  → 一句，row-reverse（第一个列在最右）
+   *     .vcol → 一列
+   *       .vr    → 一格：<b>字</b><i>假名</i>（i 在字右侧，小字）
+   *       .vrg   → 多字词 + 整段读法（读法在组右侧均匀铺开）
+   */
+  const V_ROW = 27;                       // 每个字占的高度（px），也是节距
+  let vertical = false;
+
+  /* 把带 ruby 的句子拆成「格」：单字一格，ruby 词整组一格 */
+  function atomsOf(jp) {
+    const box = doc.createElement('div');
+    box.innerHTML = jp;
+    const out = [];
+    Array.prototype.forEach.call(box.childNodes, function (n) {
+      if (n.nodeType === 3) {
+        Array.prototype.forEach.call(n.nodeValue, function (ch) { out.push({ ch: ch }); });
+        return;
+      }
+      if (n.nodeName === 'RUBY') {
+        let base = '', rt = '';
+        Array.prototype.forEach.call(n.childNodes, function (c) {
+          if (c.nodeName === 'RT') rt += c.textContent; else base += c.textContent;
+        });
+        Array.prototype.forEach.call(base, function (ch) { out.push({ ch: ch, rt: rt }); });
+        /* 一个字一个 ruby 的常见情况：读法只该挂在第一个字上，其余字不再重复标 */
+        return;
+      }
+      Array.prototype.forEach.call(n.textContent, function (ch) { out.push({ ch: ch }); });
+    });
+    return out;
+  }
+
+  const V_PUNCT = { '。': 1, '、': 1, '，': 1, '．': 1, '」': 1, '』': 1, '）': 1 };
+  const BASIC = window.__JP_BASIC || null;
+
+  function esc2(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  /* 生成一行「格」的 HTML。带 rt 的字把假名放在右侧；整词的 ruby 只挂一次。 */
+  function cellsHTML(atoms) {
+    let html = '';
+    let i = 0;
+    while (i < atoms.length) {
+      const a = atoms[i];
+      /* 收集连续、rt 相同的字，合成一个「组」（例如 象徴 / しょうちょう） */
+      if (a.rt) {
+        let j = i + 1;
+        while (j < atoms.length && atoms[j].rt === a.rt) j++;
+        const chars = atoms.slice(i, j).map(function (x) { return x.ch; });
+        const rt = a.rt;
+        const basic = BASIC && chars.every(function (c) { return BASIC[c]; });
+        if (chars.length === 1) {
+          html += '<div class="vr' + (basic ? ' k-basic' : '') + (V_PUNCT[chars[0]] ? ' p' : '') + '">' +
+                    '<b>' + esc2(chars[0]) + '</b><i>' + esc2(rt) + '</i>' +
+                  '</div>';
+        } else {
+          html += '<div class="vrg' + (basic ? ' k-basic' : '') + '" style="--n:' + chars.length + '">' +
+                    '<span class="vg">' + chars.map(function (c) { return '<b>' + esc2(c) + '</b>'; }).join('') + '</span>' +
+                    '<span class="vk">' + Array.prototype.map.call(rt, function (k) { return '<s>' + esc2(k) + '</s>'; }).join('') + '</span>' +
+                  '</div>';
+        }
+        i = j;
+        continue;
+      }
+      html += '<div class="vr' + (V_PUNCT[a.ch] ? ' p' : '') + '"><b>' + esc2(a.ch) + '</b></div>';
+      i++;
+    }
+    return html;
+  }
+
+  /* 一句拆成若干列：每列最多 maxRows 格，列从右往左 */
+  function columnsHTML(atoms, maxRows) {
+    /* 先把 atoms 展开成「占位格数」，用于折列（多字 ruby 组占 chars.length 格） */
+    const blocks = [];
+    atoms.forEach(function (a) {
+      if (blocks.length && a.rt && blocks[blocks.length - 1].rt === a.rt && blocks[blocks.length - 1].cells) {
+        blocks[blocks.length - 1].cells.push(a.ch);
+        return;
+      }
+      blocks.push(a.rt ? { rt: a.rt, cells: [a.ch] } : { ch: a.ch });
+    });
+
+    const cols = [];
+    let cur = [], used = 0;
+    blocks.forEach(function (b) {
+      const need = b.cells ? b.cells.length : 1;
+      if (used && used + need > maxRows) { cols.push(cur); cur = []; used = 0; }
+      /* 单组超过一整列时不再拆——溢出可见总比丢字好 */
+      const asAtoms = b.cells
+        ? b.cells.map(function (c) { return { ch: c, rt: b.rt }; })
+        : [{ ch: b.ch }];
+      cur = cur.concat(asAtoms);
+      used += need;
+    });
+    if (cur.length) cols.push(cur);
+
+    return cols.map(function (c) {
+      return '<div class="vcol">' + cellsHTML(c) + '</div>';
+    }).join('');
+  }
+
+  function renderVertical() {
+    const art = $('article');
+    if (!art) return;
+    const maxRows = Math.max(6, Math.floor((window.innerHeight - 300) / V_ROW));
+    art.innerHTML = SENTS.map(function (s, i) {
+      const n = i + 1;
+      return '<div class="vrow" data-i="' + i + '">' +
+        '<span class="vsn" aria-hidden="true">' + String(n).padStart(2, '0') + '</span>' +
+        columnsHTML(atomsOf(s.jp), maxRows) +
+      '</div>';
+    }).join('');
+  }
+
+  function setVertical(on) {
+    if (on === vertical) return;
+    vertical = !!on;
+    const text = $('text');
+    const art = $('article');
+    if (text) text.setAttribute('data-writing', vertical ? 'v' : 'h');
+    doc.body.classList.toggle('writing-v', vertical);
+    if (art) art.classList.toggle('is-vertical', vertical);
+    if (vertical) renderVertical();
+    else { renderSentences(); renderVocab(); }
+    /* 切回横排后，中译/罗马音状态复位 */
+    if (!vertical) { zhState.fill(false); syncMaster(); }
+    if (lk) lk.hidden = true;
+  }
+  window.__setVertical = setVertical;
+  window.__isVertical = function () { return vertical; };
+
   function renderSentences() {
     const art = $('article');
     if (!art) return;
@@ -339,6 +480,7 @@
   function renderVocab() {
     const vlist = $('vocabList');
     if (!vlist) return;
+    vlist.innerHTML = '';                    // 横竖切换会重复调用，先清空
     const esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
     VOCAB.forEach(function (v) {
       const ref = refSentence(v.w);

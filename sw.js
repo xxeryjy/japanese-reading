@@ -15,7 +15,7 @@
  *   其它（manifest.webmanifest 等）不拦截，走浏览器默认 —— 保证清单永远是最新的。
  */
 
-const VERSION = 'v27';
+const VERSION = 'v28';
 const CACHE = 'jp-read-' + VERSION;
 
 /* 预缓存：13 个 HTML + 7 个 css/js + vendor 云 SDK + 3 个图标 = 24 项。

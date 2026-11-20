@@ -35,6 +35,7 @@
   const KANJI_2 = '引羽雲園遠何科夏家歌画回会海絵外角楽活間丸岩顔汽記帰弓牛魚京強教近兄形計元言原戸古午後語工公広交光考行高黄合谷国黒今才細作算止市矢姉思紙寺自時室社弱首秋週春書少場色食心新親図数西声星晴切雪船線前組走多太体台地池知茶昼長鳥朝直通弟店点電刀冬当東答頭同道読内南肉馬売買麦半番父風分聞米歩母方北毎妹万明鳴毛門夜野友用曜来里理話';
   const BASIC = Object.create(null);
   (KANJI_1 + KANJI_2).split('').forEach(function (c) { BASIC[c] = 1; });
+  window.__JP_BASIC = BASIC;          // 竖排是自绘的格子，要在那边判断哪些字该收注音
 
   const RUBY_KEY = 'jr_ruby';
   const MODES = ['all', 'common', 'none'];
@@ -173,21 +174,9 @@
   /* ================= ⑤ 縦書き / 横書き =================
      原先挂在 theme.js 里（随主题开关一起注入），双主题下线后搬到这里。
      竖排的版式全在 layout.css 的 #text[data-writing="v"] 段，这里只切状态。 */
-  /* WebKit（Safari / iOS 所有浏览器）的 vertical-rl 列宽计算有 bug：
-     列宽退化成一条线，字符互相压字、列与列叠在一起（iPhone 实测，纯假名句子同样复现，
-     所以不是注音的问题）。显式 width:max-content 也没修好，说明不是布局参数能绕过的。
-     结论：在 WebKit 上不提供竖排，而不是给一个显示错乱的功能。 */
-  function verticalUnsupported() {
-    const ua = navigator.userAgent || '';
-    if (/iPad|iPhone|iPod/.test(ua)) return true;                 // iOS 全家（Chrome/Firefox 也是 WebKit）
-    if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;  // iPadOS 13+ 装成 Mac
-    /* macOS Safari：同一套 WebKit 实现，未逐一验证，按不支持处理更稳妥 */
-    if (/Safari/.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/.test(ua)) return true;
-    return false;
-  }
-
+  /* 2026-11-20：竖排改成自绘（见 article.js 的「縦書き（自绘）」一节），
+     不再依赖 CSS writing-mode，所以也不再需要按引擎屏蔽。 */
   function mountVertical() {
-    if (verticalUnsupported()) return;
     const bar = doc.querySelector('.toolbar');
     const panel = doc.getElementById('text');
     if (!bar || !panel || doc.getElementById('btnVertical')) return;
@@ -201,20 +190,11 @@
     b.setAttribute('title', '竖排阅读');
 
     b.addEventListener('click', function () {
-      const on = panel.getAttribute('data-writing') === 'v';
-      if (on) {
-        panel.removeAttribute('data-writing');
-        b.classList.remove('on');
-        b.textContent = '縦書き';
-        b.setAttribute('aria-pressed', 'false');
-        document.body.classList.remove('writing-v');
-      } else {
-        panel.setAttribute('data-writing', 'v');
-        b.classList.add('on');
-        b.textContent = '横書き';
-        b.setAttribute('aria-pressed', 'true');
-        document.body.classList.add('writing-v');
-      }
+      const on = !(window.__isVertical && window.__isVertical());
+      if (window.__setVertical) window.__setVertical(on);
+      b.classList.toggle('on', on);
+      b.textContent = on ? '横書き' : '縦書き';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
 
     const voiceSlot = bar.querySelector('[data-voice-slot]');

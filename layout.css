@@ -133,45 +133,76 @@
 .pg-article .zh-toggle .chip{border-radius:0;}
 
 /* 竖排阅读模式（按钮 #btnVertical 切换 #text[data-writing="v"]） */
-.pg-article #text[data-writing="v"] #article{
-  display:flex;flex-flow:row-reverse nowrap;gap:18px;
+/* ---------- 自绘竖排（2026-11-20）----------
+   不用 CSS writing-mode：iOS Safari 的 vertical-rl 列宽算不出来，字符互相压字、列叠在一起。
+   这里每个字是一个普通块，纵向 flex 排列，任何引擎结果一致。
+   结构：.vrow(一句，row-reverse) → .vcol(一列) → .vr(一格 = 字 + 右侧假名) / .vrg(整词 + 整段读法) */
+#article.is-vertical{
+  display:flex;flex-flow:row-reverse nowrap;
+  gap:12px;
   overflow-x:auto;overflow-y:hidden;
-  height:auto;
-  padding:6px 2px 12px;
+  height:calc(100vh - 300px);min-height:300px;
+  padding:2px 2px 10px;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:thin;
 }
-.pg-article #text[data-writing="v"] .sent{
-  display:block;flex:0 0 auto;height:auto;margin:0;
-  width:max-content;              /* 同上：列宽交给内容，别让 Safari 猜 */
-  border:0;border-left:1px solid var(--line);
-  padding:0 0 0 12px;
-}
-.pg-article #text[data-writing="v"] .sent:first-child{border-left:0;padding-left:0;}
-.pg-article #text[data-writing="v"] .sent > div{height:auto;}
-.pg-article #text[data-writing="v"] .sn{
-  display:block;padding:0 0 6px;font-size:10px;color:var(--brand);letter-spacing:.1em;
-}
-.pg-article #text[data-writing="v"] .jp{
-  writing-mode:vertical-rl;
-  /* 定高 + 自动列宽：长句要折成第二列，列宽必须由内容撑开。
-     Safari 不会自动算这个宽度，列宽退化成 0 → 字符互相压字、列与列叠在一起。
-     显式给 max-content 让两边的算法一致。 */
-  height:min(56vh,430px);
-  width:max-content;
-  margin:0;
-  font-size:19px;line-height:2.05;letter-spacing:.1em;
-}
-.pg-article #text[data-writing="v"] .ro,
-.pg-article #text[data-writing="v"] .zh,
-.pg-article #text[data-writing="v"] .zh-toggle,
-.pg-article #text[data-writing="v"] .snd{display:none !important;}
+#article.is-vertical::-webkit-scrollbar{height:3px;}
+#article.is-vertical::-webkit-scrollbar-thumb{background:var(--line-strong);}
 
-/* 切换按钮：只在侘寂 + 有工具行的页面出现 */
-.pg-article #btnVertical{display:inline-flex;margin-left:0;}
-.pg-article #btnVertical.on{
-  background:var(--ink);border-color:var(--ink);color:var(--on-fill);
+#article.is-vertical .vrow{
+  flex:0 0 auto;display:flex;flex-flow:row-reverse nowrap;
+  align-items:flex-start;
 }
+#article.is-vertical .vsn{
+  flex:none;width:14px;margin-right:2px;text-align:center;
+  font-family:var(--font-num);font-size:10px;line-height:1.6;
+  color:var(--text-muted);letter-spacing:.02em;
+}
+#article.is-vertical .vcol{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-start;
+  border-left:1px solid var(--line);padding-left:9px;
+}
+#article.is-vertical .vrow > .vcol:last-child{border-left:0;}
+
+/* 一格：字在左，假名在右（竖排里读法是写在字的右上方） */
+#article.is-vertical .vr{
+  display:flex;align-items:center;gap:2px;
+  height:27px;line-height:1;
+}
+#article.is-vertical .vr b{
+  font-family:var(--font-ja);font-size:19px;font-weight:400;line-height:1;color:var(--ink);
+}
+#article.is-vertical .vr i{
+  font-family:var(--font-ja);font-style:normal;
+  font-size:9px;line-height:1;color:var(--text-soft);white-space:nowrap;
+}
+/* 句读：竖排里应贴在该格右上角，居中会显得浮在中间 */
+#article.is-vertical .vr.p b{transform:translate(.12em,-.34em);}
+
+/* 整词 + 整段读法：字与假名两列，各占 --n 格高，用 space-around 铺开 */
+#article.is-vertical .vrg{
+  display:flex;align-items:stretch;
+  height:calc(27px * var(--n,2));line-height:1;
+}
+#article.is-vertical .vrg .vg{
+  display:flex;flex-direction:column;justify-content:space-around;
+}
+#article.is-vertical .vrg .vg b{
+  font-family:var(--font-ja);font-size:19px;font-weight:400;line-height:1;color:var(--ink);
+}
+#article.is-vertical .vrg .vk{
+  display:flex;flex-direction:column;justify-content:space-around;
+  font-family:var(--font-ja);font-size:9px;line-height:1;color:var(--text-soft);
+  padding-left:2px;
+}
+#article.is-vertical .vrg .vk s{text-decoration:none;display:block;}
+
+/* 注音三档在竖排下同样生效（格子高度固定，隐藏假名不引起跳动） */
+html[data-ruby="none"] #article.is-vertical .vr i,
+html[data-ruby="none"] #article.is-vertical .vk{display:none;}
+html[data-ruby="common"] #article.is-vertical .k-basic .vr i,
+html[data-ruby="common"] #article.is-vertical .vr.k-basic i,
+html[data-ruby="common"] #article.is-vertical .k-basic .vk{display:none;}
 
 /* ============================================================
    ④ 复习页：去白卡
@@ -204,8 +235,6 @@
 .pg-article.writing-v .toolbar #btnZh,
 .pg-article.writing-v .toolbar #btnRo{display:none;}
 .pg-article.writing-v .panel#text{padding-top:14px;}
-.pg-article.writing-v #text #article{height:calc(100vh - 300px);min-height:300px;}
-.pg-article.writing-v #text[data-writing="v"] .jp{height:calc(100vh - 330px);min-height:270px;}
 
 /* 竖排列滚动条压细，避免打断纸感 */
 .pg-article #text[data-writing="v"] #article::-webkit-scrollbar{height:3px;}
