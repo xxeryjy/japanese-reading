@@ -104,7 +104,8 @@
     var entry = document.createElement('button');
     entry.type = 'button';
     entry.className = 'jpv-entry';
-    entry.textContent = '语音设置';
+    entry.textContent = '语音';                    // 工具行只有 6 格，'语音设置' 在 iOS 放大字号时会挤换行
+    entry.setAttribute('aria-label', '语音设置');
     entry.onclick = open;
     slot.appendChild(entry);
 

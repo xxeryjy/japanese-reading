@@ -209,11 +209,29 @@
    原则：一屏最多留一个实心块（篇号印章），其余一律退成文字
    ============================================================ */
 /* 工具行：文字按钮，无描边无底色 */
-.pg-article .toolbar{gap:0;align-items:baseline;}
+/* 工具行：6 个文字按钮，必须永远一行。
+   之前允许 wrap，iOS 把字号放大后「语音设置」会掉到第二行；
+   更糟的是 .jpv-slot 若没被覆盖成 flex:0 1 auto，它会以 flex:1 1 100% 独占一行，
+   里面的 .jpv-entry 又是 width:100% + 居中 → 文字跑到行中间，看着像"缩进"。 */
+.pg-article .toolbar{
+  gap:0;align-items:center;          /* 不能用 baseline：语音入口是 44px 高的按钮，文字在框内居中，
+                                        其余按钮按基线对齐 → 两组文字差 8px，看起来像"掉到第二行" */
+  min-height:44px;
+  flex-wrap:nowrap;                 /* 永不换行 */
+  overflow-x:auto;overflow-y:hidden;/* 极端字号下宁可横滑，也不排成两行 */
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.pg-article .toolbar::-webkit-scrollbar{display:none;}
+/* 槽位锁成内容宽度：防止 voice.js 注入的 .jpv-slot{flex:1 1 100%} 生效 */
+.pg-article .toolbar [data-voice-slot]{
+  flex:0 0 auto;display:inline-flex;min-width:0;align-self:center;
+}
 .pg-article .tbtn{
-  min-height:0;padding:6px 0;margin:0 12px 0 0;
+  flex:0 0 auto;display:inline-flex;align-items:center;
+  min-height:44px;padding:0;margin:0 8px 0 0;
   border:0;background:none;border-radius:0;
-  font-size:11px;font-weight:400;letter-spacing:.1em;color:var(--text-soft);
+  font-size:11px;font-weight:400;letter-spacing:.03em;color:var(--text-soft);
 }
 .pg-article .tbtn:active{background:none;color:var(--ink);}
 .pg-article .tbtn.on{background:none;color:var(--ink);border-bottom:1px solid var(--ink);}
