@@ -143,6 +143,7 @@
 }
 .pg-article #text[data-writing="v"] .sent{
   display:block;flex:0 0 auto;height:auto;margin:0;
+  width:max-content;              /* 同上：列宽交给内容，别让 Safari 猜 */
   border:0;border-left:1px solid var(--line);
   padding:0 0 0 12px;
 }
@@ -152,8 +153,14 @@
   display:block;padding:0 0 6px;font-size:10px;color:var(--brand);letter-spacing:.1em;
 }
 .pg-article #text[data-writing="v"] .jp{
-  writing-mode:vertical-rl;height:min(56vh,430px);margin:0;
-  font-size:19px;line-height:2.05;letter-spacing:.14em;
+  writing-mode:vertical-rl;
+  /* 定高 + 自动列宽：长句要折成第二列，列宽必须由内容撑开。
+     Safari 不会自动算这个宽度，列宽退化成 0 → 字符互相压字、列与列叠在一起。
+     显式给 max-content 让两边的算法一致。 */
+  height:min(56vh,430px);
+  width:max-content;
+  margin:0;
+  font-size:19px;line-height:2.05;letter-spacing:.1em;
 }
 .pg-article #text[data-writing="v"] .ro,
 .pg-article #text[data-writing="v"] .zh,
