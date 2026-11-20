@@ -66,9 +66,11 @@ body{
   background:var(--fill);border:1px solid var(--line);border-radius:var(--r-card);
 }
 .acct-who{font-size:12.5px;color:var(--text-soft);}
-.ab-phone{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2);}
+/* 两列网格，不是 flex-wrap：flex 在微信里被放大字号后，输入框的 min-content
+   会把「获取验证码」挤出屏幕右边（真机上截断按钮）。网格的 1fr 列永远让位给按钮。 */
+.ab-phone{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s2);margin-top:var(--s2);}
 .ab-phone input{
-  flex:1 1 120px;min-width:0;height:44px;padding:0 var(--s3);
+  width:100%;min-width:0;height:44px;padding:0 var(--s3);
   border:1px solid var(--line);border-radius:var(--r-ctl);
   background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;
 }
@@ -1095,6 +1097,29 @@ function abMsg(txt, kind){
   el.textContent = txt || '';
   el.className = 'ab-err' + (txt ? (kind === 'ok' ? ' ok' : ' bad') : '');
 }
+
+/* 服务端错误是英文原文（invalid_client / failed to fetch …），直接甩给用户等于没说。
+   这里翻成"下一步做什么"；认不出来的原样保留，方便排查。 */
+function humanErr(e){
+  const raw = (e && (e.message || e.error_description || e.error)) || String(e || '');
+  const s = raw.toLowerCase();
+  if(s.includes('invalid_client') || s.includes('credential is invalid') || s.includes('revoked')){
+    return '本站云凭据被服务端拒绝：多半是页面还在用旧缓存。请关掉页面重新打开一次再试。';
+  }
+  if(s.includes('failed to fetch') || s.includes('networkerror') || s.includes('network request failed')){
+    return '连不上云服务，先确认网络，再重试一次。进度仍存在这台手机。';
+  }
+  if(s.includes('too many') || s.includes('rate limit') || s.includes('频繁')){
+    return '发送太频繁，等 1 分钟再试。';
+  }
+  if(s.includes('expired') || s.includes('invalid code') || s.includes('incorrect') || s.includes('invalid_argument')){
+    return '验证码不对或已过期，重新获取一个。';
+  }
+  if(s.includes('invalid phone') || s.includes('phone_number')){
+    return '手机号格式不对，检查后重填。';
+  }
+  return raw || '操作失败，请重试。';
+}
 const statusFail = ()=> statusSet('err', '没能存到云端，进度已在这台手机保存', '管理');
 
 // 账户面板：原位展开 / 收起（不是弹层）
@@ -1132,10 +1157,10 @@ function renderAuth(st){
     statusSet(err ? 'err' : 'idle',
       err ? '没能存到云端，进度已在这台手机保存' : '未登录 · 进度只在这台手机',
       err ? '管理' : '登录');
-    $('abPhone').style.display = 'flex';
+    $('abPhone').style.display = 'grid';
     $('btnSignOut').style.display = 'none';
     $('btnAcct').textContent = '登录 / 管理账户';
-    if(err) abMsg(err, 'err');
+    if(err) abMsg(humanErr(err), 'err');
   }
 }
 
@@ -1251,12 +1276,12 @@ $('btnSendCode').onclick = async function(){
   this.disabled = true;
   try{
     const otp = await st.client.auth.signInWithOtp({ phone: phone });
-    if(otp.error){ abMsg(otp.error.message || '验证码发送失败', 'err'); return; }
+    if(otp.error){ abMsg(humanErr(otp.error), 'err'); return; }
     pendingOtp = otp.data;
     $('codeInput').focus();
     abMsg('验证码已发出，60 秒后可重发', 'ok');
   }catch(e){
-    abMsg('发送失败：' + (e && e.message ? e.message : e), 'err');
+    abMsg(humanErr(e), 'err');
   }finally{
     this.disabled = false;
   }
@@ -1271,7 +1296,7 @@ $('btnVerify').onclick = async function(){
   this.disabled = true;
   try{
     const done = await pendingOtp.verify({ token: token });
-    if(done.error){ abMsg(done.error.message || '验证码校验失败', 'err'); return; }
+    if(done.error){ abMsg(humanErr(done.error), 'err'); return; }
     pendingOtp = null;
     $('abPhone').style.display = 'none';
     $('codeInput').value = '';
@@ -1284,7 +1309,7 @@ $('btnVerify').onclick = async function(){
     const pushed = await pushAllLocal();
     if(pushed) abMsg('已登录，并从本机上传 ' + pushed + ' 个词的进度', 'ok');
   }catch(e){
-    abMsg('登录失败：' + (e && e.message ? e.message : e), 'err');
+    abMsg(humanErr(e), 'err');
   }finally{
     this.disabled = false;
   }

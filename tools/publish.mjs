@@ -85,6 +85,26 @@ for (const f of ASSETS) {
 }
 if (existsSync(join(ROOT, 'vendor'))) cpSync(join(ROOT, 'vendor'), join(DIST, 'vendor'), { recursive: true });
 
+/* 2.5 给 dist 里的 cloud.js 引用打版本号
+ *
+ * 为什么只给 cloud.js 打：SW 对 js 是 cache-first，而 cloud.js 里装的是云服务的
+ * endpoint / publishableKey —— 它一旦是旧的，登录就报 invalid_client 或 Failed to fetch，
+ * 且用户看不到任何"版本过期"的提示，只会以为登录坏了。带 ?v= 之后 URL 变了，
+ * SW 必然回源取新文件，这一类"配置看起来对、线上却报凭据无效"的故障就消失了。
+ * 只改 dist 副本，源文件保持干净。 */
+let busted = 0;
+for (const f of HTML) {
+  const p = join(DIST, f);
+  if (!existsSync(p)) continue;
+  const src = readFileSync(p, 'utf8');
+  const out = src.replace(/(src=["'])cloud\.js(\?[^"']*)?(["'])/g, `$1cloud.js?v=${next}$3`);
+  if (out !== src) {
+    writeFileSync(p, out, 'utf8');
+    busted++;
+  }
+}
+console.log(`✓ cloud.js 引用已带版本号 ?v=${next}（${busted} 个 HTML）`);
+
 /* 3. 校验关键文件 */
 const must = ['index.html', 'tokens.css', 'common.css', 'layout.css', 'content.js', 'article.js', 'article-extras.js', 'sw.js'];
 const missing = must.filter((f) => !existsSync(join(DIST, f)));

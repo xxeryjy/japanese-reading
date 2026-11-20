@@ -1,17 +1,24 @@
 /* WorkBuddy Cloud Service 客户端封装（静态站点，CDN 方式）
- * 配置值来自 workbuddy_cloud_service 返回的 publicConfig：
- *   resourceId    wbcs_7SIFHIFDBl4nQVPoKrkIgN
- *   endpoint      https://wbapp-8q9zpwigjhb5v1dty0nc97.app.workbuddy.host
- *   oauthRelayBaseUrl  https://www.workbuddy.cn/v2/as/genie-baas/oauth
- *   publishableKey     wbpk_8Q9zPwigJHB5V1dty0NC97_...
- * 重新发布应用时若域名变化，只需要更新 endpoint。
+ * 配置值全部来自 workbuddy_cloud_service 返回的 publicConfig（2026-11-20 重新开通后取得）。
+ *
+ * ⚠️ 这四个值不要手改、不要从别的应用复制：
+ *    之前这文件里的 endpoint 指向的是**另一个应用**的域名（wbapp-8q9z…），
+ *    所以点登录必然 Failed to fetch —— 那扇门从来不是这个应用的。
+ *    endpoint 必须等于本应用自己的 share 域名，否则服务端 Origin 校验直接拒绝。
+ *
+ *    resourceId        wbcs_hUWuc3jV8RtqeFAUUsbYgj
+ *    endpoint          https://jp-reading.app.workbuddy.host   ← 与本应用域名一致
+ *    oauthRelayBaseUrl https://www.workbuddy.cn/v2/as/genie-baas/oauth
+ *    publishableKey    wbpk_KSU673kUbtUC1nbefLTgSq_…（仅标识应用，本身无权限）
+ *
+ * 重新发布时必须复用同一个 applicationId（wbapp_KSU673kUbtUC1nbefLTgSq），
+ * 换新应用会换域名 → Origin 不匹配 → 登录失效，而且是静默失败。
  */
 window.JPCloudConfig = {
-  endpoint: 'https://wbapp-8q9zpwigjhb5v1dty0nc97.app.workbuddy.host',
+  endpoint: 'https://jp-reading.app.workbuddy.host',
   oauthRelayBaseUrl: 'https://www.workbuddy.cn/v2/as/genie-baas/oauth',
-  publishableKey: 'wbpk_8Q9zPwigJHB5V1dty0NC97_e6GpVsG966UaU3uaF6JqaUJ9c4gAG9H1'
+  publishableKey: 'wbpk_KSU673kUbtUC1nbefLTgSq_87pJZ999YID1rqTFB14OvTjbiNZe9PUt'
 };
-
 (function () {
   var listeners = [];
   var state = { ready: false, client: null, session: null, user: null, error: null };

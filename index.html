@@ -191,6 +191,16 @@ if('serviceWorker' in navigator && location.protocol === 'https:'){
       /* 注册失败不影响正常使用，只是没有离线缓存 */
     });
   });
+  /* 新 SW 接管后自动刷一次：否则老用户要手动"关掉再开"才能拿到新版，
+     而旧版 cloud.js 会让登录直接报 invalid_client —— 界面完全看不出是缓存问题。 */
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    try{
+      if(sessionStorage.getItem('jp_sw_reload') === '1') return;   // 已在刷，别再刷
+      sessionStorage.setItem('jp_sw_reload','1');
+      location.reload();
+    }catch(e){}
+  });
+  setTimeout(function(){ try{ sessionStorage.removeItem('jp_sw_reload'); }catch(e){} }, 3000);
 }
 </script>
 </body>
