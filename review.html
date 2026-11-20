@@ -1118,7 +1118,30 @@ function humanErr(e){
   if(s.includes('invalid phone') || s.includes('phone_number')){
     return '手机号格式不对，检查后重填。';
   }
+  if(s.includes('could not find the table') || s.includes('42p01') || s.includes('does not exist')){
+    return '云端数据表还没建好，进度仍然存在这台手机。';
+  }
+  if(s.includes('42501') || s.includes('permission denied') || s.includes('row-level security')){
+    return '云端拒绝了这次访问（权限问题），进度仍然存在这台手机。';
+  }
   return raw || '操作失败，请重试。';
+}
+
+/* 登录后的显示名。
+   坑：user 对象里没有 name 时，早先的写法用 '已登录' 兜底，再拼成「已登录：已登录」。
+   这里返回空串表示"没有可显示的名字"，由调用方决定只说「已登录」。
+   手机号/邮箱一律打码，不把完整联系方式写到屏幕上（也会进截图）。 */
+function whoOf(u){
+  if(!u) return '';
+  const name = u.name || u.nickname || u.displayName || '';
+  if(name) return String(name);
+  const phone = u.phone || u.phoneNumber || u.phone_number || '';
+  if(phone){ let d = String(phone).replace(/[^\d]/g, ''); if(d.indexOf('86') === 0 && d.length > 11) d = d.slice(2); if(d.length >= 7) return d.slice(0,3) + '****' + d.slice(-4); }
+  const mail = u.email || '';
+  if(mail && mail.indexOf('@') > 0){ const p = mail.split('@'); return p[0].slice(0,1) + '***@' + p[1]; }
+  const un = u.username || '';
+  if(un) return String(un);
+  return '';
 }
 const statusFail = ()=> statusSet('err', '没能存到云端，进度已在这台手机保存', '管理');
 
@@ -1143,9 +1166,9 @@ function renderAuth(st){
   const authed = !!(st && st.session);
   const who = $('acctWho'), line = $('acctLine');
   if(authed){
-    const name = (st.user && (st.user.name || st.user.phone || st.user.email)) || '已登录';
-    if(who) who.textContent = '已登录：' + name;
-    if(line) line.textContent = '已登录：' + name + ' · 进度自动同步到云端';
+    const name = whoOf(st.user);
+    if(who) who.textContent = name ? ('已登录：' + name) : '已登录';
+    if(line) line.textContent = name ? ('已登录：' + name + ' · 进度自动同步到云端') : '已登录 · 进度自动同步到云端';
     statusSet('synced', '已同步 · 刚刚', '管理');
     $('abPhone').style.display = 'none';
     $('btnSignOut').style.display = 'inline-flex';
@@ -1194,7 +1217,7 @@ async function pullCloud(){
     statusSet('synced', '已同步 · 刚刚', '管理');
     abMsg(applied ? '已从云端同步 ' + applied + ' 个词' : '云端已是最新', 'ok');
   }catch(e){
-    abMsg('云端读取失败：' + (e && e.message ? e.message : e), 'err');
+    abMsg('云端读取失败：' + humanErr(e), 'err');
     statusFail();
   }
 }
