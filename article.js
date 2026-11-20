@@ -443,6 +443,9 @@
   function renderSentences() {
     const art = $('article');
     if (!art) return;
+    /* 必须清空：横竖切换会重复调用，只 append 会把竖排的格子留在页面上
+       （表现为每个字占一行，像上面那张截图） */
+    art.innerHTML = '';
     SENTS.forEach(function (s, i) {
       const n = i + 1;
       const div = doc.createElement('div');
