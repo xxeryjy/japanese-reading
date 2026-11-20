@@ -15,20 +15,21 @@
   const doc = document;
   const $ = function (id) { return doc.getElementById(id); };
 
-  /* ---------- 定位本篇 ---------- */
+  /* ---------- 定位本篇 ----------
+     单页之后主入口是 ?id=a11；保留按文件名兜底，方便旧链接与本地手动打开。 */
   function findArticle() {
     const A = (window.APP_DATA && window.APP_DATA.articles) || [];
-    let file = location.pathname.split('/').pop() || 'index.html';
-    let a = A.filter(function (x) { return x.file === file; })[0];
-    if (!a) {
-      const stamp = doc.querySelector('.tabbar .stamp');
-      if (stamp) a = A.filter(function (x) { return x.no === (stamp.textContent || '').trim(); })[0];
+    let want = '';
+    try { want = new URLSearchParams(location.search).get('id') || ''; } catch (e) { want = ''; }
+    if (want) {
+      const hit = A.filter(function (x) { return x.id === want; })[0];
+      if (hit) return hit;
     }
-    return a || null;
+    return A[0] || null;   // 没带 ?id 就落到第一篇（也方便本地直接打开调试）
   }
 
   const ART = findArticle();
-  if (!ART) { console.error('article.js: 找不到本篇数据（检查 location 与 articles[].file）'); return; }
+  if (!ART) { console.error('article.js: 找不到本篇数据（检查 URL 的 ?id= 是否存在于 content.js）'); return; }
 
   const SENTS = ART.sentences || [];
   /* 词汇表来自 content.js（全站唯一词表）：按本篇 id 过滤，字段映射到原渲染契约 */
@@ -475,9 +476,77 @@
     setTimeout(function () { el.classList.remove('hl'); }, 2600);
   }
 
+  /* ================= 壳渲染（单页之后，页面本身不含任何文章内容） ================= */
+  function renderShell() {
+    doc.title = ART.pageTitle || (ART.ja + '｜日语初级阅读');
+
+    const cover = doc.querySelector('header.cover');
+    if (cover) {
+      const h1 = cover.querySelector('h1.ja');
+      if (h1) h1.innerHTML = ART.titleRuby || ART.ja;
+      const meta = cover.querySelector('.meta');
+      if (meta) {
+        meta.innerHTML = (ART.tags || []).map(function (t) {
+          return '<span class="tag">' + t + '</span>';
+        }).join('');
+      }
+      const lead = cover.querySelector('.lead');
+      if (lead) lead.textContent = ART.lead || '';
+    }
+
+    const wrap = doc.querySelector('.wrap');
+    if (wrap) wrap.setAttribute('data-piece', ART.id);
+
+    const stamp = doc.querySelector('.tabbar .stamp');
+    if (stamp) stamp.textContent = ART.no || '';
+
+    const t = doc.querySelector('.cta-t');
+    if (t) t.textContent = ART.ctaTitle || '读完测一下';
+    const s = doc.querySelector('.cta-s');
+    if (s) s.textContent = ART.ctaSub || '';
+    const btn = doc.querySelector('.cta-btn');
+    if (btn) {
+      btn.setAttribute('href', 'review.html?set=' + ART.id);
+      btn.textContent = '测这 ' + VOCAB.length + ' 个词 →';
+    }
+  }
+
+  function renderGrammar() {
+    const box = $('grammarList');
+    if (!box) return;
+    box.innerHTML = (ART.grammar || []).map(function (g) {
+      /* 换行位置照抄旧页面（</span> 与 g-ex 之间有一个换行），
+         否则 textContent 会少一个空格——内容一样，但对比脚本会当成差异。 */
+      return '<div class="g-item">' +
+        '<span class="g-form">' + g.form + '</span>' +
+        '<span class="g-lesson">' + g.lesson + '</span>\n      ' +
+        '<div class="g-ex">' + g.ex + '</div>' +
+      '</div>';
+    }).join('\n');
+  }
+
+  function renderCulture() {
+    const h = $('cultureH');
+    if (h) h.textContent = ART.cultureTitle || '文化小知识';
+    const list = $('factList');
+    /* facts 存的是每条事实的内部 HTML 原样：13 篇的格式并不统一
+       （有的 </b> 后直接冒号，有的插了（出处），有的一整段没有小标题），
+       结构化解析必然丢东西。 */
+    if (list) {
+      list.innerHTML = (ART.facts || []).map(function (f) {
+        return '<div class="fact">' + f + '</div>';
+      }).join('\n');
+    }
+    const src = $('sourceText');
+    if (src) src.textContent = ART.source || '';
+  }
+
   /* ================= 启动 ================= */
   function init() {
     if (!SENTS.length) { console.warn('article.js: 本篇没有 sentences 数据 — ' + ART.id); }
+    renderShell();
+    renderGrammar();
+    renderCulture();
     buildOccurrences();
     renderSentences();
     renderVocab();

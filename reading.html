@@ -104,7 +104,7 @@ header{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s4);}
   }
 
   document.getElementById('cards').innerHTML = A.map(function(a){
-    return '<a class="card" href="'+esc(a.file)+'" data-piece="'+esc(a.id)+'">'+
+    return '<a class="card" href="article.html?id='+esc(a.id)+'" data-piece="'+esc(a.id)+'">'+
       '<div class="stamp-row"><span class="stamp'+(READ[a.id]?'':' is-unread')+'">'+esc(a.no)+'</span><span class="cat">'+esc(a.cat)+'</span></div>'+
       '<div class="t-ja" lang="ja">'+esc(a.ja)+'</div>'+
       '<div class="t-zh" lang="zh-CN">'+esc(a.zh)+'</div>'+

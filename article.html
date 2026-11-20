@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日语阅读">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<title>昨日の日曜日｜日语初级阅读·日記篇 12</title>
+<title>日语初级阅读</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="common.css">
 <link rel="stylesheet" href="layout.css">
@@ -18,20 +18,20 @@
 <!-- data-tabs 必须在正文解析前挂上：否则 4 个 panel 会先全部可见再收起（闪一下） -->
 <script>document.documentElement.setAttribute('data-tabs','on');</script>
 
-<div class="wrap" data-piece="a12">
+<!-- 全站唯一课文页。用 ?id=a11 指定篇目，内容全部由 content.js 渲染。
+     2026-11-20 之前是每篇一个 HTML（13 个 124 行的近似副本），
+     骨架重复占了 50%，改一次模板要批量改 13 个文件——已合并为这一页。 -->
+<div class="wrap">
 
   <header class="cover">
-    <h1 class="ja" lang="ja"><ruby>昨日<rt>きのう</rt></ruby>の<ruby>日曜日<rt>にちようび</rt></ruby></h1>
-    <div class="meta">
-      <span class="tag">15 句 · 日記体</span>
-      <span class="tag">整篇过去时</span>
-    </div>
-    <p class="lead">整篇只用过去时。从起床、吃饭到看电影，把 N5 过去时走一遍。</p>
+    <h1 class="ja" lang="ja"></h1>
+    <div class="meta"></div>
+    <p class="lead"></p>
   </header>
 
   <nav class="tabbar" role="tablist" aria-label="文章分区">
     <a class="back" href="reading.html" aria-label="返回阅读目录"><span aria-hidden="true">←</span></a>
-    <span class="stamp" aria-hidden="true">12</span>
+    <span class="stamp" aria-hidden="true"></span>
     <button role="tab" aria-selected="true" aria-controls="text" id="tab-text" tabindex="0">课文</button>
     <button role="tab" aria-selected="false" aria-controls="vocab" id="tab-vocab" tabindex="-1">词汇</button>
     <button role="tab" aria-selected="false" aria-controls="grammar" id="tab-grammar" tabindex="-1">语法</button>
@@ -58,47 +58,24 @@
   <section class="panel" id="grammar" role="tabpanel" aria-labelledby="tab-grammar">
     <h2>语法点（对标《大家的日本语》）</h2>
     <div id="verbTable"></div>
-    <div class="g-item">
-      <span class="g-form">〜ました（过去时）</span><span class="g-lesson">第4课</span>
-      <div class="g-ex">动词ます形的过去：「起き<b>ました</b>」「食べ<b>ました</b>」。否定过去是「〜ませんでした」。</div>
-    </div>
-    <div class="g-item">
-      <span class="g-form">〜でした／〜かったです</span><span class="g-lesson">第8课</span>
-      <div class="g-ex">名词和な形容词过去用「でした」；い形容词去掉 い 加「かったです」：いい→<b>よかったです</b>。</div>
-    </div>
-    <div class="g-item">
-      <span class="g-form">〜が、（转折）</span><span class="g-lesson">看懂即可</span>
-      <div class="g-ex">「長かっ<b>たですが</b>、面白かったです」＝虽然长，但有意思。口语更常说「けど」。</div>
-    </div>
-    <div class="g-item">
-      <span class="g-form">疑问词 ＋ か</span><span class="g-lesson">看懂即可</span>
-      <div class="g-ex">「どこ<b>か</b>へ行きたい」＝想去个什么地方。か 把疑问词变成"某处/某物"。</div>
-    </div>
+    <div id="grammarList"></div>
   </section>
 
   <section class="panel" id="culture" role="tabpanel" aria-labelledby="tab-culture">
-    <h2>生活小知识</h2>
-    <div class="fact">
-      📅 <b>日语的星期来自「七曜」</b>：日月火水木金土 来自古代天文，日本从明治时代起在官方文书里固定使用。所以「星期一」在日语是「月曜日」，不是"第一日"——和中文的「星期一…」逻辑完全不同。
-    </div>
-    <div class="fact">
-      🍤 <b>天ぷら 是外来词</b>：一般认为是 16 世纪随葡萄牙人传入的「南蛮料理」之一。语源有 tempero（调味）、tempora（斋戒日）等多种说法，至今没有定论。
-    </div>
-    <div class="fact">
-      🙏 <b>いただきます 不是宗教仪式</b>：「いただきます」「ごちそうさま」是饭前饭后必说的两句，意思是对食物和做饭的人表示感谢。一个人吃饭也照说。
-    </div>
+    <h2 id="cultureH">文化小知识</h2>
+    <div id="factList"></div>
     <details class="src">
       <summary>事实来源 <span class="chev" aria-hidden="true">›</span></summary>
-      <p>日本国立天文台「暦要項」相关公开说明（七曜）；天ぷら 语源见日本料理类公开资料（通说，非定论）；本页日文课文为原创编写。</p>
+      <p id="sourceText"></p>
     </details>
   </section>
 
   <div class="cta">
     <div class="cta-body">
       <div class="cta-t">读完测一下</div>
-      <div class="cta-s">这 15 个词，翻卡自测，只看这一篇。</div>
+      <div class="cta-s"></div>
     </div>
-    <a class="cta-btn" href="review.html?set=a12">测这 15 个词 →</a>
+    <a class="cta-btn" href="review.html">测这 15 个词 →</a>
   </div>
 
 </div>

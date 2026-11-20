@@ -724,9 +724,9 @@ function refOf(w){
   const sents = a.sentences || [];
   const key = String(w.ja).replace(/（.*?）/g,'').replace(/[〜~]/g,'').trim();
   for(let i = 0; i < sents.length; i++){
-    if(key && (sents[i].plain || '').indexOf(key) >= 0) return { file: a.file, no: i + 1 };
+    if(key && (sents[i].plain || '').indexOf(key) >= 0) return { file: 'article.html?id=' + a.id, no: i + 1 };
   }
-  return { file: a.file, no: 0 };
+  return { file: 'article.html?id=' + a.id, no: 0 };
 }
 
 function fmt(ts){
@@ -814,7 +814,8 @@ function finish(){
   wl.innerHTML = wrongList.length ? '' : '<div class="empty">没有错词。</div>';
   wrongList.forEach(w=>{
     const ref = refOf(w);
-    const href = ref.file ? ref.file + (ref.no ? '?s=' + ref.no : '') : '';
+    /* 单页之后 ref.file 已经是 'article.html?id=a11'（自带查询串），所以接 &s= 不是 ?s= */
+    const href = ref.file ? ref.file + (ref.no ? '&s=' + ref.no : '') : '';
     const go = ref.no ? '回到第 ' + ref.no + ' 句 ›' : (href ? '回到这篇 ›' : '');
     const d = document.createElement('div');
     d.innerHTML =
@@ -830,8 +831,8 @@ function finish(){
   const back = $('btnBackArt');
   if(back){
     const a = ARTICLE_BY_ID[curScope];
-    if(a && a.file){
-      back.href = a.file;
+    if(a && a.id){
+      back.href = 'article.html?id=' + a.id;
       back.textContent = '回到第 ' + a.no + ' 篇「' + (a.short || a.ja) + '」再读一遍';
       back.hidden = false;
     }else{
@@ -1318,10 +1319,10 @@ refreshDash();
 showSyncInfo();
 
 // 从课文页进入：?set=a1..a5 直接开始该篇
-/* 文章映射从 content.js 派生：ARTICLES[id]=文件名，NAMES[id]=「分类 编号 · 简称」。 */
+/* 文章映射从 content.js 派生：ARTICLES[id]=单页链接，NAMES[id]=「分类 编号 · 简称」。 */
 const ARTICLES = {}, NAMES = {};
 APP_DATA.articles.forEach(function(a){
-  ARTICLES[a.id] = a.file;
+  ARTICLES[a.id] = 'article.html?id=' + a.id;
   NAMES[a.id] = a.cat + ' ' + a.no + ' · ' + a.short;
 });
 try{

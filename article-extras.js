@@ -17,17 +17,14 @@
 
   function findArticle() {
     const A = (window.APP_DATA && window.APP_DATA.articles) || [];
-    let file = location.pathname.split('/').pop() || '';
-    if (!file || file === '') file = 'index.html';
-    let a = A.filter(function (x) { return x.file === file; })[0];
-    if (!a) {                                   // 本地用别的名字打开时，退回页内印章编号
-      const stamp = doc.querySelector('.tabbar .stamp');
-      if (stamp) {
-        const no = (stamp.textContent || '').trim();
-        a = A.filter(function (x) { return x.no === no; })[0];
-      }
+    /* 单页之后主入口是 ?id=a11 */
+    let want = '';
+    try { want = new URLSearchParams(location.search).get('id') || ''; } catch (e) { want = ''; }
+    if (want) {
+      const hit = A.filter(function (x) { return x.id === want; })[0];
+      if (hit) return hit;
     }
-    return a || null;
+    return A[0] || null;
   }
 
   /* ================= ① 注音三档 =================
